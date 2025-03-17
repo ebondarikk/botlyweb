@@ -1,0 +1,185 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .bg-background {
+    background: linear-gradient(160deg, #4D4B55, #403E47);
+  }
+}
+
+@layer components {
+  .custom-card {
+    @apply bg-[#353238] border border-white/5 shadow-sm rounded-xl hover:border-[#EA580C]/10 transition-all duration-300;
+  }
+  
+  .btn-primary {
+    @apply bg-[#EA580C] hover:bg-[#F97316] text-white py-2.5 px-6 rounded-lg transition-all duration-300;
+  }
+
+  .btn-outline {
+    @apply border border-[#EA580C] text-[#EA580C] hover:bg-[#EA580C]/10 py-2.5 px-6 rounded-lg transition-all duration-300;
+  }
+
+  .btn-secondary {
+    @apply bg-[#2A2C31] hover:bg-[#32353B] text-white/90 py-2.5 px-6 rounded-lg transition-all duration-300 border border-white/10 hover:border-white/20;
+  }
+
+  .btn-destructive {
+    @apply bg-[#EF4444] hover:bg-[#DC2626] text-white py-2.5 px-6 rounded-lg transition-all duration-300;
+  }
+
+  .btn-destructive-outline {
+    @apply border border-[#EF4444] text-[#EF4444] hover:bg-[#EF4444]/10 py-2.5 px-6 rounded-lg transition-all duration-300;
+  }
+
+  .sidebar-menu-button {
+    @apply hover:bg-[#EA580C]/10 data-[active]:bg-[#EA580C]/10 data-[active]:border-l-[3px] data-[active]:border-[#EA580C] data-[active]:text-[#F97316];
+  }
+
+  .sidebar-menu-icon {
+    @apply text-[#9CA3AF] group-hover:text-[#F97316] group-data-[active]:text-[#F97316];
+  }
+
+  .sidebar-dropdown {
+    @apply bg-[#353238] border border-white/5 shadow-sm;
+  }
+
+  .brand-logo {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    letter-spacing: -0.025em;
+    background: linear-gradient(to right, #EA580C, #F97316);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Form Components Styling */
+  .form-input {
+    @apply bg-[#2A2C31] border-white/5 text-white placeholder:text-white/40;
+  }
+
+  .form-select {
+    @apply bg-[#2A2C31] border-white/5 text-white;
+  }
+
+  .form-switch {
+    @apply bg-[#2A2C31] border-white/10;
+  }
+
+  .form-switch[data-state="checked"] {
+    @apply bg-[#EA580C] border-[#EA580C];
+  }
+
+  .form-checkbox {
+    @apply bg-[#2A2C31] border-white/10 text-[#EA580C];
+  }
+
+  .form-radio {
+    @apply bg-[#2A2C31] border-white/10 text-[#EA580C];
+  }
+}
+
+@layer base {
+  :root {
+    --background: 260 5% 31%;
+    --foreground: 0 0% 98%;
+    --popover: 260 5% 31%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 24 92% 48%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 260 5% 20%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 260 5% 20%;
+    --muted-foreground: 260 5% 65%;
+    --accent: 24 92% 48%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 260 5% 20%;
+    --input: 260 5% 20%;
+    --ring: 24 92% 48%;
+    --chart-1: 24 92% 48%;
+    --chart-2: 20 90% 50%;
+    --chart-3: 28 90% 52%;
+    --chart-4: 32 85% 55%;
+    --chart-5: 16 85% 50%;
+    --radius: 1rem;
+    --sidebar-background: 260 5% 31%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 24 92% 48%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 24 92% 48%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 24 92% 48%;
+    --sidebar-ring: 24 92% 48%;
+  }
+
+  .dark {
+    --background: 260 5% 31%;
+    --foreground: 0 0% 98%;
+    --popover: 260 5% 31%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 24 92% 48%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 260 5% 20%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 260 5% 20%;
+    --muted-foreground: 260 5% 65%;
+    --accent: 24 92% 48%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 260 5% 20%;
+    --input: 260 5% 20%;
+    --ring: 24 92% 48%;
+    --chart-1: 24 92% 48%;
+    --chart-2: 20 90% 50%;
+    --chart-3: 28 90% 52%;
+    --chart-4: 32 85% 55%;
+    --chart-5: 16 85% 50%;
+    --sidebar-background: 260 5% 31%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 24 92% 48%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 24 92% 48%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 24 92% 48%;
+    --sidebar-ring: 24 92% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-gradient-to-br from-[#4D4B55] via-[#474550] to-[#403E47] text-foreground min-h-screen;
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: -0.025em;
+  }
+
+  strong, b {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+  }
+
+  body, p, span, .text {
+    @apply text-[#E5E7EB] text-[15px] leading-relaxed;
+    font-weight: 400;
+  }
+}
+
+.bg-gradient-to-br {
+  background: linear-gradient(160deg, #4D4B55, #474550, #403E47);
+}
