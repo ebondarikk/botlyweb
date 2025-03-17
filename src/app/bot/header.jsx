@@ -26,13 +26,13 @@ function Header({ activeTab }) {
     // };
   }, []);
   return (
-    <header className="sticky-header flex h-16 shrink-0 items-center gap-4 custom-card rounded-t-none px-4">
+    <header className="sticky-header flex h-16 shrink-0 items-center gap-4 rounded-t-none px-4">
       {/* <div className="flex items-center gap-4 min-w-[240px] border-r border-white/5 -mr-2"> */}
       <SidebarTrigger />
       {/* <h1 className="brand-logo">Botly</h1> */}
       {/* </div> */}
       <div className="flex items-center gap-4">
-        <span className="truncate font-medium text-[15px]">{activeTab?.name}</span>
+        <span className="truncate font-semibold text-lg">{activeTab?.name}</span>
       </div>
     </header>
   );

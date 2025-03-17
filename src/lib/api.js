@@ -1,7 +1,6 @@
 import { toast } from 'react-hot-toast';
 
-const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
-// const BASE_URL = 'http://localhost:8817';
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 /**
  * Функция-обёртка для API-запросов.

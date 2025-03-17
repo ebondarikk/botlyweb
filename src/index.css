@@ -6,7 +6,7 @@
 
 @layer utilities {
   .bg-background {
-    background: linear-gradient(160deg, #4D4B55, #403E47);
+    background: #4D4B55;
   }
 }
 
@@ -158,7 +158,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-gradient-to-br from-[#4D4B55] via-[#474550] to-[#403E47] text-foreground min-h-screen;
+    @apply bg-[#474550]  text-foreground min-h-screen;
     font-family: 'Inter', sans-serif;
   }
 
@@ -181,5 +181,5 @@
 }
 
 .bg-gradient-to-br {
-  background: linear-gradient(160deg, #4D4B55, #474550, #403E47);
+  background:  #474550;
 }

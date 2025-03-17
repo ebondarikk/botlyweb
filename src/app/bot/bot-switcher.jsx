@@ -24,7 +24,7 @@ export function BotSwitcher({ bots, activeBot, setActiveBot, loading }) {
   return loading ? (
     <Skeleton className="w-full h-12 bg-gray-300 my-1" />
   ) : (
-    <SidebarMenu>
+    <SidebarMenu className="z-99">
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

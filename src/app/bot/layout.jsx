@@ -132,21 +132,21 @@ function BotLayoutContent({ children }) {
 
   return (
     <>
-      <Sidebar collapsible="icon">
-        <SidebarHeader>
+      <Sidebar collapsible="icon" className="">
+        <SidebarHeader className="z-99">
           <BotSwitcher bots={bots} activeBot={bot} setActiveBot={setBot} loading={loading} />
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-            <SidebarMenu>
+            <SidebarMenu className="">
               {items.map((item) => (
                 <SidebarMenuItem
                   key={item.name}
-                  className={`${item.disabled && 'opacity-50 pointer-events-none'}`}
+                  className={`leading-6  h-10 p-0 ${item.disabled && 'opacity-50 pointer-events-none'}`}
                 >
                   <NavLink to={item.url(bot?.id)} end={item.url(bot?.id) === `/${bot?.id}`}>
                     {({ isActive }) => (
-                      <SidebarMenuButton asChild isActive={isActive}>
+                      <SidebarMenuButton asChild isActive={isActive} className="h-10">
                         <div>
                           <item.icon />
                           <span>{`${item.name}${item.disabled ? ' (Скоро)' : ''}`}</span>
