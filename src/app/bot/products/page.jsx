@@ -72,48 +72,28 @@ export default function ProductList() {
     <BotLayout>
       <div className="w-full px-4 md:px-8">
         {/* Панель управления */}
-        <div className="flex flex-col md:flex-row stretch md:items-center justify-between gap-4 py-4">
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setDesc(!desc)}>
-              {desc ? <ArrowDownWideNarrow /> : <ArrowDownNarrowWide />}
-            </Button>
-            <Select onValueChange={setOrderBy} defaultValue={orderBy}>
-              <SelectTrigger className="w-44">
-                <SelectValue value={orderBy} placeholder="Сортировать по" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Сортировка</SelectLabel>
-                  {sorting.map((sort) => (
-                    <SelectItem key={sort.value} value={sort.value}>
-                      {sort.name}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
+        <div className="flex gap-4 py-4 flex-wrap justify-between">
+          <div className="w-full lg:w-fit">
             <Tabs value={groupedFilter} onValueChange={setGroupedFilter}>
               <TabsList className="w-full">
-                <TabsTrigger value="" className="w-1/2">
+                <TabsTrigger value="" className="w-full">
                   Все
                 </TabsTrigger>
-                <TabsTrigger value="false" className="w-1/2">
+                <TabsTrigger value="false" className="w-full">
                   Простые
                 </TabsTrigger>
-                <TabsTrigger value="true" className="w-1/2">
+                <TabsTrigger value="true" className="w-full">
                   Сгруппированные
                 </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
-          <div className="flex items-center gap-4">
-            <Label htmlFor="category_filter">Категории:</Label>
-            <DropdownMenu>
+          <div className="flex items-center gap-4 w-full lg:w-fit">
+            {/* <Label htmlFor="category_filter">Категории:</Label> */}
+            <DropdownMenu placeholder="Категория" className="w-full">
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-36 truncate">
-                  {categoriesFilter.length ? categoriesFilter.join(', ') : 'Все'}
+                <Button variant="outline" className="w-full truncate">
+                  {categoriesFilter.length ? categoriesFilter.join(', ') : 'Все категории'}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56">
@@ -137,7 +117,7 @@ export default function ProductList() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div className="relative w-full md:w-64">
+          <div className="relative w-full lg:w-64">
             <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
             <Input
               id="search"
@@ -151,8 +131,28 @@ export default function ProductList() {
         </div>
 
         {/* Информация о найденных товарах */}
-        <div className="flex py-2 flex-col md:flex-row justify-between w-full">
-          <div className="mb-4 text-lg">Найдено {count} товаров</div>
+        <div className="flex py-2 flex-col md:flex-row justify-between w-full gap-4">
+          <div className="text-lg">Найдено {count} товаров</div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setDesc(!desc)}>
+              {desc ? <ArrowDownWideNarrow /> : <ArrowDownNarrowWide />}
+            </Button>
+            <Select onValueChange={setOrderBy} defaultValue={orderBy}>
+              <SelectTrigger className="w-44">
+                <SelectValue value={orderBy} placeholder="Сортировать по" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Сортировка</SelectLabel>
+                  {sorting.map((sort) => (
+                    <SelectItem key={sort.value} value={sort.value}>
+                      {sort.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
           <Button asChild>
             <Link to="add" className="btn-primary">
               Добавить товар
@@ -162,7 +162,7 @@ export default function ProductList() {
 
         {/* Скелетоны товаров при загрузке */}
         {loading && !products.length && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 p-2 md:p-4">
             {Array.from({ length: 12 }).map((_, index) => (
               <Card key={index} className="flex flex-col h-[500px] custom-card">
                 <div className="relative h-48">
@@ -191,7 +191,7 @@ export default function ProductList() {
           dataLength={products.length}
           next={nextPage}
           hasMore={products.length < count}
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 p-4"
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 p-2 px-0 md:p-4"
           scrollThreshold={0.8}
           loader={
             <div className="col-span-full flex justify-center py-4">

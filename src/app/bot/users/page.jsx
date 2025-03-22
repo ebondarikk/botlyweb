@@ -17,7 +17,7 @@ function UserSkeleton() {
     <Card className="overflow-hidden custom-card">
       <CardContent className="p-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-col flex-grow gap-3">
+          <div className="flex flex-col md:flex-row flex-grow gap-1 md:gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <Skeleton className="h-4 w-8 bg-gray-200" />
               <Skeleton className="h-4 w-16 bg-gray-200" />
@@ -70,12 +70,18 @@ export default function UsersList() {
     <BotLayout>
       <div className="w-full px-4 md:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-          <div>
+          <div className="w-full md:w-fit">
             <Tabs value={blockedFilter} onValueChange={setBlockedFilter}>
               <TabsList className="w-full">
-                <TabsTrigger value="">Все</TabsTrigger>
-                <TabsTrigger value="false">Активные</TabsTrigger>
-                <TabsTrigger value="true">Заблокированные</TabsTrigger>
+                <TabsTrigger className="w-full" value="">
+                  Все
+                </TabsTrigger>
+                <TabsTrigger className="w-full" value="false">
+                  Активные
+                </TabsTrigger>
+                <TabsTrigger className="w-full" value="true">
+                  Заблокированные
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -122,7 +128,7 @@ export default function UsersList() {
                 <Card key={user.id} className="overflow-hidden custom-card">
                   <CardContent className="p-4">
                     <div className="flex flex-wrap items-center justify-between gap-4">
-                      <div className="flex flex-col flex-grow gap-1">
+                      <div className="flex flex-col md:flex-row flex-grow gap-1 md:gap-4 flex-wrap">
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-gray-500">ID:</span>
                           <span className="font-medium">{user.id}</span>

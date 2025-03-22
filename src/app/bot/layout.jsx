@@ -67,15 +67,14 @@ const items = [
     icon: Send,
   },
   {
-    name: 'Доставка',
-    url: (bot_id) => `/${bot_id}/delivery`,
-    icon: Truck,
-    disabled: true,
-  },
-  {
     name: 'Менеджеры',
     url: (bot_id) => `/${bot_id}/managers`,
     icon: BriefcaseBusiness,
+  },
+  {
+    name: 'Доставка',
+    url: (bot_id) => `/${bot_id}/delivery`,
+    icon: Truck,
     disabled: true,
   },
   {

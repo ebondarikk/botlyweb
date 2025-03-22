@@ -3,44 +3,53 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { telegramAuth } from '@/lib/api';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const isSessionSaved = !!window.TelegramLogin;
+  const [loading, setLoading] = React.useState(false);
 
   useEffect(() => {
-    window.onTelegramAuth = async function (user) {
+    window.onTelegramAuth = async function (data, webApp = false) {
       try {
-        const response = await telegramAuth(user);
+        setLoading(true);
+        const response = await telegramAuth(data, webApp);
         localStorage.setItem('access_token', response.access_token);
         toast.success('Добро пожаловать в Botly!');
         navigate('/');
       } catch (error) {
         toast.error('Не удалось войти через Telegram');
         console.error('Ошибка Telegram auth:', error);
+      } finally {
+        setLoading(false);
       }
     };
     if (localStorage.getItem('access_token')) {
       window.location.href = '/';
     }
 
-    const script = document.createElement('script');
-    script.src = 'https://telegram.org/js/telegram-widget.js?7';
-    script.setAttribute('data-telegram-login', import.meta.env.VITE_TELEGRAM_BOT_NAME);
-    script.setAttribute('data-size', 'large');
-    script.setAttribute('data-userpic', 'true');
-    script.setAttribute('data-request-access', 'write');
-    script.setAttribute('data-onauth', 'onTelegramAuth(user)');
-    // script.async = true;
+    const tg = window.Telegram.WebApp;
 
-    const container = document.getElementById('telegram-widget-container');
-    if (container) {
-      container.innerHTML = '';
-      container.appendChild(script);
-      if (isSessionSaved) {
-        //
+    if (tg?.initData) {
+      window.onTelegramAuth({ init_data: tg.initData }, true);
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://telegram.org/js/telegram-widget.js?7';
+      script.setAttribute('data-telegram-login', import.meta.env.VITE_TELEGRAM_BOT_NAME);
+      // script.setAttribute('data-telegram-login', 'botly_developer_bot');
+      script.setAttribute('data-size', 'large');
+      script.setAttribute('data-userpic', 'true');
+      script.setAttribute('data-request-access', 'write');
+      script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+      // script.async = true;
+
+      const container = document.getElementById('telegram-widget-container');
+      if (container) {
+        container.innerHTML = '';
+        container.appendChild(script);
+        if (isSessionSaved) {
+          //
+        }
       }
     }
 
@@ -62,7 +71,16 @@ export default function LoginPage() {
           <p className="text-center text-muted-foreground mb-6 drop-shadow-sm">
             Войдите через Telegram и начните управлять своим магазином.
           </p>
-          <div id="telegram-widget-container" className="flex justify-center" />
+          {loading && (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            </div>
+          )}
+          <div
+            id="telegram-widget-container"
+            className="flex justify-center"
+            style={{ display: `${loading ? 'none' : 'block'}` }}
+          />
         </CardContent>
       </Card>
     </div>

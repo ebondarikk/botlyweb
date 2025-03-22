@@ -82,13 +82,13 @@ function BotPage() {
       <div className="w-full">
         {/* Информация о боте */}
         <Card className="border-none shadow-none">
-          <CardHeader className="flex flex-row items-center gap-4 px-8 pt-6 pb-8">
+          <CardHeader className="flex flex-row items-center gap-4 px-2 pt-6 pb-8">
             <CardTitle className="text-2xl font-semibold">
               {loading ? <Skeleton className="h-8 w-40" /> : bot?.fullname}
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-8">
-            <div className="custom-card rounded-xl border p-8 bg-card/50">
+          <CardContent className="px-2">
+            <div className="custom-card rounded-xl border p-4 bg-card/50">
               <div className="flex flex-col lg:flex-row justify-between gap-8">
                 {/* Левая часть: ID и Пользователь */}
                 <div className="flex flex-col gap-4">
@@ -159,20 +159,20 @@ function BotPage() {
             </div>
 
             {/* Статистика */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-              <div className="custom-card rounded-xl border p-6 bg-card/50">
+            <div className="grid grid-cols-3 gap-4 md:gap-6 mt-8">
+              <div className="custom-card rounded-xl border p-4 md:p-6 bg-card/50">
                 <p className="text-sm font-medium text-muted-foreground mb-2">Заказы</p>
                 <div className="text-2xl font-semibold">
                   {loading ? <Skeleton className="h-8 w-16" /> : bot?.orders_count}
                 </div>
               </div>
-              <div className="custom-card rounded-xl border p-6 bg-card/50">
+              <div className="custom-card rounded-xl border p-4 md:p-6 bg-card/50">
                 <p className="text-sm font-medium text-muted-foreground mb-2">Клиенты</p>
                 <div className="text-2xl font-semibold">
                   {loading ? <Skeleton className="h-8 w-16" /> : bot?.users_count}
                 </div>
               </div>
-              <div className="custom-card rounded-xl border p-6 bg-card/50">
+              <div className="custom-card rounded-xl border p-4 md:p-6 bg-card/50">
                 <p className="text-sm font-medium text-muted-foreground mb-2">Средний чек</p>
                 <div className="text-2xl font-semibold">
                   {loading ? (
@@ -185,7 +185,7 @@ function BotPage() {
             </div>
 
             {/* График продаж */}
-            <div className="custom-card rounded-xl border p-8 mt-8 bg-card/50">
+            <div className="custom-card rounded-xl border p-4 mt-8 bg-card/50">
               <h3 className="text-base font-semibold mb-6">Доход</h3>
               <div className="h-64">
                 {loading ? (
@@ -216,7 +216,7 @@ function BotPage() {
             </div>
 
             {/* Последние заказы */}
-            <div className="custom-card rounded-xl border p-8 mt-8 bg-card/50">
+            <div className="custom-card rounded-xl border p-4 mt-8 bg-card/50">
               <h3 className="text-base font-semibold mb-6">Последние заказы</h3>
               {loading ? (
                 <Skeleton className="h-48 w-full" />

@@ -58,16 +58,22 @@ export default function MailingsList() {
     <BotLayout>
       <div className="w-full px-4 md:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-          <div>
+          <div className="w-full md:w-fit">
             <Tabs value={publishedFilter} onValueChange={setPublishedFilter}>
               <TabsList className="w-full">
-                <TabsTrigger value="">Все</TabsTrigger>
-                <TabsTrigger value="false">Неопубликованные</TabsTrigger>
-                <TabsTrigger value="true">Опубликованные</TabsTrigger>
+                <TabsTrigger className="w-full" value="">
+                  Все
+                </TabsTrigger>
+                <TabsTrigger className="w-full" value="false">
+                  Неопубликованные
+                </TabsTrigger>
+                <TabsTrigger className="w-full" value="true">
+                  Опубликованные
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
-          <div className="overflow-x-auto rounded-md relative">
+          <div className="overflow-x-auto rounded-md relative w-full md:w-fit">
             <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
             <Input
               id="search"

@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useEffect, useCallback } from 'react';
 import { getUsers, updateUser } from '@/lib/api';
 import { toast } from 'react-hot-toast';

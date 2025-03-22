@@ -13,6 +13,8 @@ import CategoriesList from './app/bot/categories/page';
 import CategoryFormPage from './app/bot/categories/category/page';
 import MailingsList from './app/bot/mailings/page';
 import MailingFormPage from './app/bot/mailings/mailing/page';
+import ManagersList from './app/bot/managers/page';
+import ManagerFormPage from './app/bot/managers/manager/page';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -115,6 +117,30 @@ function App() {
             element={
               <BotProvider>
                 <MailingFormPage />
+              </BotProvider>
+            }
+          />
+          <Route
+            path="/:bot_id/managers"
+            element={
+              <BotProvider>
+                <ManagersList />
+              </BotProvider>
+            }
+          />
+          <Route
+            path="/:bot_id/managers/:manager_id"
+            element={
+              <BotProvider>
+                <ManagerFormPage />
+              </BotProvider>
+            }
+          />
+          <Route
+            path="/:bot_id/managers/add"
+            element={
+              <BotProvider>
+                <ManagerFormPage />
               </BotProvider>
             }
           />

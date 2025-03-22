@@ -1,6 +1,7 @@
 import { toast } from 'react-hot-toast';
 
 const BASE_URL = import.meta.env.VITE_API_URL;
+// const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
 
 /**
  * Функция-обёртка для API-запросов.
@@ -83,9 +84,11 @@ async function apiRequest(url, options = {}) {
  * Схема ответа: LoginResponse
  *
  * @param {object} telegramAuthData - Объект авторизации Telegram.
+ * @param {boolean} webApp - Флаг, указывающий, что запрос отправлен из Web App.
  */
-export async function telegramAuth(telegramAuthData) {
-  return apiRequest('/auth/telegram', {
+export async function telegramAuth(telegramAuthData, webApp = false) {
+  const url = webApp ? '/auth/telegram/web-app' : '/auth/telegram';
+  return apiRequest(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -165,6 +168,73 @@ export async function getProducts(botId, page, limit, order_by, search, categori
   });
 }
 
+export async function getManagers(botId, search, is_active) {
+  const params = {
+    search,
+  };
+
+  if (is_active !== '') {
+    params.is_active = is_active;
+  }
+
+  const queryParams = new URLSearchParams(params).toString();
+
+  return apiRequest(`/bots/${botId}/managers/?${queryParams}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+export async function loadManager(botId, managerId) {
+  return apiRequest(`/bots/${botId}/managers/${managerId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+export async function createManager(botId, managerData) {
+  return apiRequest(`/bots/${botId}/managers/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(managerData),
+  });
+}
+
+export async function deleteManager(botId, managerId) {
+  return apiRequest(`/bots/${botId}/managers/${managerId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+export async function updateManager(botId, managerId, managerData) {
+  return apiRequest(`/bots/${botId}/managers/${managerId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(managerData),
+  });
+}
+
+export async function checkManagerUsername(botId, username) {
+  return apiRequest(`/bots/${botId}/managers/check-username`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ username }),
+  });
+}
+
 export async function getMailings(botId, page, limit, order_by, search, published) {
   const params = {
     order_by,
@@ -176,9 +246,6 @@ export async function getMailings(botId, page, limit, order_by, search, publishe
   if (published !== '') {
     params.published = published.toString();
   }
-
-  console.log(params);
-  console.log(published);
 
   const queryParams = new URLSearchParams(params).toString();
 
