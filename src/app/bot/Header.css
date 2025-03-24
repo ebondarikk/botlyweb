@@ -1,10 +1,45 @@
 .sticky-header {
   position: sticky;
   top: 0;
-  padding: 20px;
+  padding: 12px 24px;
   border-bottom: 1px solid hsl(var(--border));
   z-index: 10;
-  background: inherit;
+  background: linear-gradient(135deg,
+      hsl(var(--background)/.95) 0%,
+      hsl(var(--card)/0.92) 100%);
+  backdrop-filter: blur(12px) brightness(0.85);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.2),
+    0 2px 4px -2px rgb(0 0 0 / 0.2),
+    inset 0 1px 0 hsl(var(--background)/0.05);
+  transition: all 0.3s ease;
+  height: 60px;
+  display: flex;
+  align-items: center;
+}
+
+.sticky-header:hover {
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.25),
+    0 4px 6px -4px rgb(0 0 0 / 0.25),
+    inset 0 1px 0 hsl(var(--background)/0.1);
+  background: linear-gradient(135deg,
+      hsl(var(--background)/.98) 0%,
+      hsl(var(--card)/0.95) 100%);
+}
+
+.sticky-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+      transparent,
+      hsl(var(--primary)/0.8),
+      transparent);
+  opacity: 0.8;
 }
 
 .sticky-header nav {
@@ -20,11 +55,36 @@
 
 .sticky-header li {
   cursor: pointer;
-  color: #333333;
-  font-weight: bold;
-  transition: color 0.3s ease-in-out;
+  color: hsl(var(--foreground)/0.8);
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: transparent;
 }
 
 .sticky-header li:hover {
-  color: #ff0000;
+  color: hsl(var(--primary));
+  transform: translateY(-1px);
+  background: hsl(var(--primary)/0.1);
+}
+
+.sticky-header li::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg,
+      transparent,
+      hsl(var(--primary)),
+      transparent);
+  transition: width 0.3s ease;
+}
+
+.sticky-header li:hover::after {
+  width: 80%;
 }

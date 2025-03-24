@@ -15,6 +15,7 @@ import MailingsList from './app/bot/mailings/page';
 import MailingFormPage from './app/bot/mailings/mailing/page';
 import ManagersList from './app/bot/managers/page';
 import ManagerFormPage from './app/bot/managers/manager/page';
+import CreateBot from './app/create-bot/page';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -144,6 +145,7 @@ function App() {
               </BotProvider>
             }
           />
+          <Route path="/add" element={<CreateBot />} />
         </Routes>
       </Router>
     </QueryClientProvider>

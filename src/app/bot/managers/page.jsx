@@ -157,7 +157,7 @@ export default function ManagersList() {
                           </div>
                           {manager.is_admin && (
                             <div className="flex items-center gap-2">
-                              <span className="text-sm text-gray-500">Админ</span>
+                              <span className="text-sm text-gray-500">Администратор</span>
                             </div>
                           )}
                         </div>

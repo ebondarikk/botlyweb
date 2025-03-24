@@ -14,7 +14,7 @@
   .custom-card {
     @apply bg-[#353238] border border-white/5 shadow-sm rounded-xl hover:border-[#EA580C]/10 transition-all duration-300;
   }
-  
+
   .btn-primary {
     @apply bg-[#EA580C] hover:bg-[#F97316] text-white py-2.5 px-6 rounded-lg transition-all duration-300;
   }
@@ -157,29 +157,39 @@
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-[#474550]  text-foreground min-h-screen;
+    @apply bg-[#474550] text-foreground min-h-screen;
     font-family: 'Inter', sans-serif;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.9);
     letter-spacing: -0.025em;
   }
 
-  strong, b {
+  strong,
+  b {
     color: rgba(255, 255, 255, 0.9);
     font-weight: 600;
   }
 
-  body, p, span, .text {
+  body,
+  p,
+  span,
+  .text {
     @apply text-[#E5E7EB] text-[15px] leading-relaxed;
     font-weight: 400;
   }
 }
 
 .bg-gradient-to-br {
-  background:  #474550;
+  background: #474550;
 }

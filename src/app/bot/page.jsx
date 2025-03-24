@@ -105,7 +105,15 @@ function BotPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-base text-muted-foreground">Username:</span>
-                        <span className="text-base font-medium">@{bot?.username}</span>
+                        <span className="text-base font-medium underline">
+                          <a
+                            href={`https://t.me/${bot?.username}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            @{bot?.username}
+                          </a>
+                        </span>
                       </div>
                     </>
                   )}

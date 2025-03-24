@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Link } from 'react-router-dom';
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -75,7 +76,9 @@ export function BotSwitcher({ bots, activeBot, setActiveBot, loading }) {
               <div className="flex size-6 items-center justify-center rounded-md border bg-background">
                 <Plus className="size-4" />
               </div>
-              <div className="font-medium text-muted-foreground ">Добавить магазин (Скоро)</div>
+              <div className="font-medium text-foreground ">
+                <Link to="/add">Добавить магазин</Link>
+              </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

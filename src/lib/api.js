@@ -111,6 +111,26 @@ export async function getBots() {
   });
 }
 
+export async function validateBotToken(token) {
+  return apiRequest('/bots/validate', {
+    method: 'POST',
+    body: JSON.stringify({ token }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+export async function createBot(botData) {
+  return apiRequest('/bots/', {
+    method: 'POST',
+    body: JSON.stringify(botData),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
 /**
  * Получение детальной информации о боте.
  *
