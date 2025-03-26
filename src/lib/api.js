@@ -1,7 +1,7 @@
 import { toast } from 'react-hot-toast';
 
-const BASE_URL = import.meta.env.VITE_API_URL;
-// const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
+// const BASE_URL = import.meta.env.VITE_API_URL;
+const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
 
 /**
  * Функция-обёртка для API-запросов.
@@ -475,4 +475,23 @@ export async function uploadImage(formData) {
 
   const data = await response.json();
   return data.url;
+}
+
+export async function getDeliverySettings(botId) {
+  return apiRequest(`/bots/${botId}/settings/delivery`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+export async function updateDeliverySettings(botId, settings) {
+  return apiRequest(`/bots/${botId}/settings/delivery`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(settings),
+  });
 }

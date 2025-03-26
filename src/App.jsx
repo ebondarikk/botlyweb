@@ -16,6 +16,7 @@ import MailingFormPage from './app/bot/mailings/mailing/page';
 import ManagersList from './app/bot/managers/page';
 import ManagerFormPage from './app/bot/managers/manager/page';
 import CreateBot from './app/create-bot/page';
+import SettingsPage from './app/bot/settings/page';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -142,6 +143,14 @@ function App() {
             element={
               <BotProvider>
                 <ManagerFormPage />
+              </BotProvider>
+            }
+          />
+          <Route
+            path="/:bot_id/settings"
+            element={
+              <BotProvider>
+                <SettingsPage />
               </BotProvider>
             }
           />

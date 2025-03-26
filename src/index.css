@@ -35,6 +35,10 @@
     @apply border border-[#EF4444] text-[#EF4444] hover:bg-[#EF4444]/10 py-2.5 px-6 rounded-lg transition-all duration-300;
   }
 
+  .bg-sidebar-accent:hover {
+    @apply bg-primary/50;
+  }
+
   .sidebar-menu-button {
     @apply hover:bg-[#EA580C]/10 data-[active]:bg-[#EA580C]/10 data-[active]:border-l-[3px] data-[active]:border-[#EA580C] data-[active]:text-[#F97316];
   }

@@ -28,7 +28,7 @@ import {
   ShoppingCart,
   Folder,
   Send,
-  Truck,
+  Settings,
   UsersRound,
   ChartNoAxesCombined,
   CalendarClock,
@@ -72,10 +72,9 @@ const items = [
     icon: BriefcaseBusiness,
   },
   {
-    name: 'Доставка',
-    url: (bot_id) => `/${bot_id}/delivery`,
-    icon: Truck,
-    disabled: true,
+    name: 'Настройки',
+    url: (bot_id) => `/${bot_id}/settings`,
+    icon: Settings,
   },
   {
     name: 'Аналитика',
