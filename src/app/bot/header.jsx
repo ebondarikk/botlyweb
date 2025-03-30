@@ -1,40 +1,39 @@
-import React, { useEffect, useState } from 'react';
-import { Events } from 'react-scroll';
-import './Header.css';
-
-import { Separator } from '@/components/ui/separator';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Bot, ChevronRight } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 
 function Header({ activeTab }) {
-  const [isSticky, setIsSticky] = useState(false);
-
-  useEffect(() => {
-    const handleScrollBegin = () => {
-      setIsSticky(true);
-    };
-    const handleScrollEnd = () => {
-      setIsSticky(false);
-    };
-
-    Events.scrollEvent.register('begin', handleScrollBegin);
-    Events.scrollEvent.register('end', handleScrollEnd);
-
-    // return () => {
-    //   console.log("unregister");
-    //   Events.scrollEvent.remove("begin", handleScrollBegin);
-    //   Events.scrollEvent.remove("end", handleScrollEnd);
-    // };
-  }, []);
   return (
-    <header className="sticky-header flex h-16 shrink-0 items-center gap-4 rounded-t-none px-4">
-      {/* <div className="flex items-center gap-4 min-w-[240px] border-r border-white/5 -mr-2"> */}
-      <SidebarTrigger />
-      {/* <h1 className="brand-logo">Botly</h1> */}
-      {/* </div> */}
+    <motion.header
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className={cn(
+        'sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/95 px-6',
+        'backdrop-blur supports-[backdrop-filter]:bg-background/60',
+      )}
+    >
       <div className="flex items-center gap-4">
-        <span className="truncate font-semibold text-lg">{activeTab?.name}</span>
+        <SidebarTrigger />
+        <div className="hidden md:block h-4 w-[1px] bg-border/50" />
+        <div className="flex items-center gap-1 text-muted-foreground">
+          <Bot className="w-4 h-4" />
+          <span className="text-sm font-medium">Botly</span>
+          <ChevronRight className="w-4 h-4" />
+          <motion.div
+            key={activeTab?.name}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center"
+          >
+            {activeTab?.icon && <activeTab.icon className="w-4 h-4 mr-1.5 text-primary" />}
+            <span className="font-medium text-foreground">{activeTab?.name}</span>
+          </motion.div>
+        </div>
       </div>
-    </header>
+    </motion.header>
   );
 }
 

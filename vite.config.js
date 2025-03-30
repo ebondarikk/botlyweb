@@ -11,4 +11,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    allowedHosts: [
+      'https://period-winston-televisions-textiles.trycloudflare.com',
+      'reproduced-twins-saver-jill.trycloudflare.com',
+    ],
+  },
 });

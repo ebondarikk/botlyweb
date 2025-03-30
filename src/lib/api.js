@@ -1,7 +1,7 @@
 import { toast } from 'react-hot-toast';
 
-// const BASE_URL = import.meta.env.VITE_API_URL;
-const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
+const BASE_URL = import.meta.env.VITE_API_URL;
+// const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
 
 /**
  * Функция-обёртка для API-запросов.
@@ -493,5 +493,52 @@ export async function updateDeliverySettings(botId, settings) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(settings),
+  });
+}
+
+export async function getTariffs() {
+  return apiRequest('/tariffs/', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+export async function getSubscription(botId) {
+  return apiRequest(`/bots/${botId}/subscriptions/`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+export async function updateSubscriptionEmail(botId, email) {
+  return apiRequest(`/bots/${botId}/subscriptions/email`, {
+    method: 'PUT',
+    body: JSON.stringify({ email }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+export async function updateSubscription(botId, tariffId) {
+  return apiRequest(`/bots/${botId}/subscriptions/`, {
+    method: 'POST',
+    body: JSON.stringify({ tariff_id: tariffId }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+export async function cancelSubscription(botId) {
+  return apiRequest(`/bots/${botId}/subscriptions/cancel`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
   });
 }

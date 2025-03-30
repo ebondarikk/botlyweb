@@ -3,10 +3,24 @@ import { useProducts } from '@/hooks/use-products';
 import { useCategories } from '@/hooks/use-categories';
 import { useBot } from '@/context/BotContext';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { motion, AnimatePresence } from 'framer-motion';
 
-import { Skeleton } from '@/components/ui/skeleton'; // Добавил импорт скелетонов
+import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from '@/components/ui/card';
-import { ArrowDownNarrowWide, ArrowDownWideNarrow, SearchIcon, ImageIcon } from 'lucide-react';
+import {
+  ArrowDownNarrowWide,
+  ArrowDownWideNarrow,
+  SearchIcon,
+  ImageIcon,
+  Package,
+  Filter,
+  Plus,
+  Layers,
+  Tag,
+  Box,
+  Eye,
+  EyeOff,
+} from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
@@ -35,9 +49,9 @@ import {
 import BotLayout from '@/app/bot/layout';
 
 const sorting = [
-  { name: 'По названию', value: 'name' },
-  { name: 'По стоимости', value: 'price' },
-  { name: 'По кол-ву на складе', value: 'warehouse_count' },
+  { name: 'По названию', value: 'name', icon: Package },
+  { name: 'По стоимости', value: 'price', icon: Package },
+  { name: 'По кол-ву на складе', value: 'warehouse_count', icon: Package },
 ];
 
 export default function ProductList() {
@@ -68,31 +82,72 @@ export default function ProductList() {
 
   const { categories } = useCategories(bot?.id);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: [0.4, 0, 0.2, 1],
+      },
+    },
+  };
+
   return (
     <BotLayout>
-      <div className="w-full px-4 md:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full px-4 md:px-8"
+      >
         {/* Панель управления */}
-        <div className="flex gap-4 py-4 flex-wrap justify-between">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex gap-4 py-6 flex-wrap justify-between"
+        >
           <div className="w-full lg:w-fit">
-            <Tabs value={groupedFilter} onValueChange={setGroupedFilter}>
-              <TabsList className="w-full">
-                <TabsTrigger value="" className="w-full">
+            <Tabs value={groupedFilter} onValueChange={setGroupedFilter} className="w-full">
+              <TabsList className="w-full bg-muted/50 p-1">
+                <TabsTrigger
+                  value=""
+                  className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
                   Все
                 </TabsTrigger>
-                <TabsTrigger value="false" className="w-full">
+                <TabsTrigger
+                  value="false"
+                  className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
                   Простые
                 </TabsTrigger>
-                <TabsTrigger value="true" className="w-full">
+                <TabsTrigger
+                  value="true"
+                  className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
                   Сгруппированные
                 </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
           <div className="flex items-center gap-4 w-full lg:w-fit">
-            {/* <Label htmlFor="category_filter">Категории:</Label> */}
             <DropdownMenu placeholder="Категория" className="w-full">
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full truncate">
+                <Button variant="outline" className="w-full gap-2">
+                  <Filter className="w-4 h-4" />
                   {categoriesFilter.length ? categoriesFilter.join(', ') : 'Все категории'}
                 </Button>
               </DropdownMenuTrigger>
@@ -118,27 +173,40 @@ export default function ProductList() {
             </DropdownMenu>
           </div>
           <div className="relative w-full lg:w-64">
-            <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+            <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
             <Input
               id="search"
               type="search"
               value={search}
               placeholder="Поиск..."
-              className="pl-10"
+              className="pl-10 bg-muted/50 border-none"
               onChange={(event) => setSearch(event.target.value)}
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* Информация о найденных товарах */}
-        <div className="flex py-2 flex-col md:flex-row justify-between w-full gap-4">
-          <div className="text-lg">Найдено {count} товаров</div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="flex py-4 flex-col md:flex-row justify-between w-full gap-4 items-center"
+        >
+          <div className="text-lg font-medium">Найдено {count} товаров</div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setDesc(!desc)}>
-              {desc ? <ArrowDownWideNarrow /> : <ArrowDownNarrowWide />}
+            <Button
+              variant="outline"
+              onClick={() => setDesc(!desc)}
+              className="bg-muted/50 border-none hover:bg-muted"
+            >
+              {desc ? (
+                <ArrowDownWideNarrow className="w-4 h-4" />
+              ) : (
+                <ArrowDownNarrowWide className="w-4 h-4" />
+              )}
             </Button>
             <Select onValueChange={setOrderBy} defaultValue={orderBy}>
-              <SelectTrigger className="w-44">
+              <SelectTrigger className="w-44 bg-muted/50 border-none">
                 <SelectValue value={orderBy} placeholder="Сортировать по" />
               </SelectTrigger>
               <SelectContent>
@@ -153,37 +221,45 @@ export default function ProductList() {
               </SelectContent>
             </Select>
           </div>
-          <Button asChild>
-            <Link to="add" className="btn-primary">
+          <Button asChild className="bg-primary hover:bg-primary/90">
+            <Link to="add" className="flex items-center gap-2">
+              <Plus className="w-4 h-4" />
               Добавить товар
             </Link>
           </Button>
-        </div>
+        </motion.div>
 
         {/* Скелетоны товаров при загрузке */}
         {loading && !products.length && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 p-2 md:p-4">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 p-2 md:p-4"
+          >
             {Array.from({ length: 12 }).map((_, index) => (
-              <Card key={index} className="flex flex-col h-[500px] custom-card">
-                <div className="relative h-48">
-                  <Skeleton className="absolute inset-0 rounded-t-lg bg-muted" />
-                </div>
-                <CardContent className="flex flex-col flex-grow mt-4 space-y-2.5 px-4">
-                  <Skeleton className="h-7 w-3/4 bg-muted" />
-                  <Skeleton className="h-16 w-full bg-muted" />
-                  <div className="space-y-2 mt-2">
-                    <Skeleton className="h-5 w-2/3 bg-muted" />
-                    <Skeleton className="h-5 w-3/4 bg-muted" />
-                    <Skeleton className="h-5 w-1/2 bg-muted" />
+              <motion.div key={index} variants={itemVariants}>
+                <Card className="flex flex-col h-[500px] custom-card">
+                  <div className="relative h-48">
+                    <Skeleton className="absolute inset-0 rounded-t-lg bg-muted/50" />
                   </div>
-                </CardContent>
-                <CardFooter className="mt-auto pt-4 px-4 flex justify-between items-center border-t">
-                  <Skeleton className="h-6 w-20 bg-muted" />
-                  <Skeleton className="h-7 w-24 bg-muted" />
-                </CardFooter>
-              </Card>
+                  <CardContent className="flex flex-col flex-grow mt-4 space-y-2.5 px-4">
+                    <Skeleton className="h-7 w-3/4 bg-muted/50" />
+                    <Skeleton className="h-16 w-full bg-muted/50" />
+                    <div className="space-y-2 mt-2">
+                      <Skeleton className="h-5 w-2/3 bg-muted/50" />
+                      <Skeleton className="h-5 w-3/4 bg-muted/50" />
+                      <Skeleton className="h-5 w-1/2 bg-muted/50" />
+                    </div>
+                  </CardContent>
+                  <CardFooter className="mt-auto pt-4 px-4 flex justify-between items-center border-t border-border/10">
+                    <Skeleton className="h-6 w-20 bg-muted/50" />
+                    <Skeleton className="h-7 w-24 bg-muted/50" />
+                  </CardFooter>
+                </Card>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
 
         {/* Карточки товаров */}
@@ -199,100 +275,171 @@ export default function ProductList() {
             </div>
           }
         >
-          {products.map((product) => (
-            <a href={`/${bot.id}/products/${product.id}`} key={product.id}>
-              <Card
-                className={`relative flex h-full flex-col transition-all duration-300 ease-in-out 
-                    hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10 
-                    // ${product.frozen ? 'opacity-60' : ''} 
-                    group border-border/50 hover:border-primary/50 custom-card overflow-hidden`}
+          <AnimatePresence>
+            {products.map((product, index) => (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ y: -5 }}
               >
-                {/* Метки */}
-                <div className="absolute z-10 top-3 right-3 flex flex-col gap-1">
-                  {product.frozen && (
-                    <span className="bg-destructive/90 text-destructive-foreground text-xs px-2.5 py-1 rounded-full font-medium shadow-sm">
-                      Скрыт
-                    </span>
-                  )}
-                  {product.warehouse && product.warehouse_count < 10 && (
-                    <span className="bg-warning/90 text-warning-foreground text-xs px-2.5 py-1 rounded-full font-medium shadow-sm">
-                      Мало на складе
-                    </span>
-                  )}
-                </div>
-                {/* Изображение */}
-                <div className="relative w-full h-48">
-                  <div
-                    className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-transform duration-300 group-hover:scale-105"
-                    style={{
-                      backgroundImage: `url(${product.preview_image})`,
-                      backgroundColor: 'rgb(243 244 246)',
-                    }}
-                  />
-                  {!product.preview_image && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
-                      <ImageIcon className="w-12 h-12 text-muted-foreground/40" />
+                <Link to={`/${bot.id}/products/${product.id}`}>
+                  <Card
+                    className={`relative flex h-full flex-col transition-all duration-300 ease-in-out 
+                      group border-border/50 hover:border-primary/50 custom-card overflow-hidden
+                      backdrop-blur-sm bg-card/95
+                      ${product.frozen ? 'opacity-80 hover:opacity-100' : ''}`}
+                  >
+                    {/* Метки */}
+                    <div className="absolute z-10 top-3 right-3 flex flex-col gap-1.5">
+                      <AnimatePresence>
+                        {product.frozen && (
+                          <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            className="flex items-center gap-1.5 bg-destructive/90 text-destructive-foreground text-xs px-2.5 py-1.5 rounded-full font-medium shadow-sm"
+                          >
+                            <EyeOff className="w-3.5 h-3.5" />
+                            <span>Скрыт</span>
+                          </motion.div>
+                        )}
+                        {product.warehouse && product.warehouse_count < 10 && (
+                          <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            className="flex items-center gap-1.5 bg-warning/90 text-warning-foreground text-xs px-2.5 py-1.5 rounded-full font-medium shadow-sm"
+                          >
+                            <Box className="w-3.5 h-3.5" />
+                            <span>Мало на складе</span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-                  )}
-                </div>
-                {/* Контент */}
-                <CardContent className="flex flex-col flex-grow mt-4 space-y-2.5 px-5">
-                  <CardTitle className="text-lg font-semibold line-clamp-2 leading-tight text-foreground/90">
-                    {product.name}
-                  </CardTitle>
-                  <CardDescription className="text-sm text-muted-foreground/80 line-clamp-3">
-                    {product.description || 'Описание отсутствует'}
-                  </CardDescription>
-                  <div className="space-y-1.5 mt-1">
-                    <div className="text-sm flex items-center gap-2">
-                      <span className="text-muted-foreground/70">Тип:</span>
-                      <span className="font-medium">
-                        {product.grouped ? 'Сгруппированный' : 'Простой'}
-                      </span>
-                    </div>
-                    <div className="text-sm flex items-center gap-2">
-                      <span className="text-muted-foreground/70">Категория:</span>
-                      <span className="font-medium">{product.category || '-'}</span>
-                    </div>
-                    <div className="text-sm flex items-center gap-2">
-                      <span className="text-muted-foreground/70">Склад:</span>
-                      <span className="font-medium">
-                        {product.warehouse ? product.warehouse_count || '0' : '-'}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-                {/* Футер */}
-                <CardFooter className="mt-auto pt-4 px-5 flex justify-between items-center border-t border-border/40">
-                  <div className="flex items-center gap-3">
-                    <Label htmlFor={`${product.id}_frozen`} className="text-sm font-medium">
-                      Скрыт
-                    </Label>
-                    <Switch
-                      id={`${product.id}_frozen`}
-                      checked={product.frozen}
-                      disabled={loadingProductId === product.id}
-                      onClick={async (e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        await updateProduct(product.id, {
-                          frozen: e.target.children[0].dataset.state === 'unchecked',
-                        });
-                      }}
-                      onCheckedChange={async (e) => {
-                        await updateProduct(product.id, { frozen: e });
-                      }}
-                    />
-                  </div>
-                  <span className="text-lg font-bold text-foreground">
-                    {product.price} {bot.currency}
-                  </span>
-                </CardFooter>
-              </Card>
-            </a>
-          ))}
+
+                    {/* Изображение */}
+                    <motion.div
+                      className="relative w-full h-48 overflow-hidden group"
+                      whileHover="hover"
+                    >
+                      <motion.div
+                        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+                        style={{
+                          backgroundImage: `url(${product.preview_image})`,
+                          backgroundColor: 'rgb(243 244 246)',
+                        }}
+                        variants={{
+                          hover: {
+                            scale: 1.1,
+                            transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
+                          },
+                        }}
+                      />
+                      {!product.preview_image && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
+                          <ImageIcon className="w-12 h-12 text-muted-foreground/40" />
+                        </div>
+                      )}
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0"
+                        variants={{
+                          hover: {
+                            opacity: 1,
+                            transition: { duration: 0.3 },
+                          },
+                        }}
+                      />
+                    </motion.div>
+
+                    {/* Контент */}
+                    <CardContent className="flex flex-col flex-grow mt-4 space-y-4 px-5">
+                      <div>
+                        <CardTitle className="text-lg font-semibold line-clamp-2 leading-tight text-foreground/90 group-hover:text-primary transition-colors">
+                          {product.name}
+                        </CardTitle>
+                        <CardDescription className="text-sm text-muted-foreground/80 line-clamp-3 mt-2">
+                          {product.description || 'Описание отсутствует'}
+                        </CardDescription>
+                      </div>
+
+                      <div className="space-y-2.5">
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary/5 text-primary">
+                            <Layers className="w-4 h-4" />
+                            <span className="font-medium">
+                              {product.grouped ? 'Сгруппированный' : 'Простой'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted">
+                            <Tag className="w-4 h-4 text-muted-foreground" />
+                            <span className="font-medium text-foreground/80">
+                              {product.category || 'Без категории'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted">
+                            <Box className="w-4 h-4 text-muted-foreground" />
+                            <span className="font-medium text-foreground/80">
+                              {product.warehouse
+                                ? `${product.warehouse_count || '0'} шт.`
+                                : 'Нет на складе'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+
+                    {/* Футер */}
+                    <CardFooter className="mt-auto pt-4 px-5 flex justify-between items-center border-t border-border/10">
+                      <div className="flex items-center gap-3">
+                        <Label
+                          htmlFor={`${product.id}_frozen`}
+                          className="text-sm font-medium flex items-center gap-2 cursor-pointer"
+                        >
+                          {product.frozen ? (
+                            <EyeOff className="w-4 h-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="w-4 h-4 text-muted-foreground" />
+                          )}
+                          <span className="text-muted-foreground">
+                            {product.frozen ? 'Скрыт' : 'Виден'}
+                          </span>
+                        </Label>
+                        <Switch
+                          id={`${product.id}_frozen`}
+                          checked={product.frozen}
+                          disabled={loadingProductId === product.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                          }}
+                          onCheckedChange={async (checked) => {
+                            await updateProduct(product.id, { frozen: checked });
+                          }}
+                        />
+                      </div>
+                      <motion.div
+                        className="flex items-baseline gap-1"
+                        whileHover={{ scale: 1.05 }}
+                      >
+                        <span className="text-2xl font-bold text-foreground">{product.price}</span>
+                        <span className="text-sm text-muted-foreground font-medium">
+                          {bot.currency}
+                        </span>
+                      </motion.div>
+                    </CardFooter>
+                  </Card>
+                </Link>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </InfiniteScroll>
-      </div>
+      </motion.div>
     </BotLayout>
   );
 }

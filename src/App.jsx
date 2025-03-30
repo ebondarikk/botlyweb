@@ -17,6 +17,8 @@ import ManagersList from './app/bot/managers/page';
 import ManagerFormPage from './app/bot/managers/manager/page';
 import CreateBot from './app/create-bot/page';
 import SettingsPage from './app/bot/settings/page';
+import BillingPage from './app/billing/page';
+import SubscriptionPage from './app/bot/subscription/page';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,7 +28,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -34,6 +35,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/add" element={<CreateBot />} />
           <Route
             path="/:bot_id"
             element={
@@ -154,7 +156,15 @@ function App() {
               </BotProvider>
             }
           />
-          <Route path="/add" element={<CreateBot />} />
+          <Route path="/:bot_id/billing" element={<BillingPage />} />
+          <Route
+            path="/:bot_id/subscription"
+            element={
+              <BotProvider>
+                <SubscriptionPage />
+              </BotProvider>
+            }
+          />
         </Routes>
       </Router>
     </QueryClientProvider>

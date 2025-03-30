@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { SearchIcon, GripVertical } from 'lucide-react';
+import { SearchIcon, GripVertical, Plus, Folder, Package } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   DndContext,
   closestCenter,
@@ -29,22 +30,22 @@ import BotLayout from '@/app/bot/layout';
 
 function CategorySkeleton() {
   return (
-    <Card className="overflow-hidden custom-card">
-      <CardContent className="p-4">
+    <Card className="overflow-hidden custom-card border-border/50">
+      <CardContent className="p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 relative pr-8">
           <div className="w-full sm:w-auto">
-            <Skeleton className="h-6 w-48 bg-gray-200" />
+            <Skeleton className="h-6 w-48 bg-muted/50" />
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center gap-2">
-              <Skeleton className="h-4 w-16 bg-gray-200" />
+              <Skeleton className="h-4 w-16 bg-muted/50" />
             </div>
             <div className="flex items-center gap-2">
-              <Skeleton className="h-4 w-24 bg-gray-200" />
+              <Skeleton className="h-4 w-24 bg-muted/50" />
             </div>
           </div>
           <div className="absolute right-0 top-1/2 -translate-y-1/2">
-            <Skeleton className="h-6 w-6 rounded bg-gray-200" />
+            <Skeleton className="h-6 w-6 rounded bg-muted/50" />
           </div>
         </div>
       </CardContent>
@@ -79,37 +80,43 @@ function SortableCard({ category, botId, disabled }) {
     <Card
       ref={setNodeRef}
       style={style}
-      className={`overflow-hidden custom-card ${isDragging ? 'shadow-lg' : ''}`}
+      className={`overflow-hidden custom-card border-border/50 hover:border-primary/50 transition-all duration-300
+        ${isDragging ? 'shadow-lg ring-2 ring-primary/20' : 'hover:bg-card/70'}`}
     >
-      <CardContent className="p-4">
+      <CardContent className="p-6">
         <div className="flex items-center gap-4">
           <Link
             to={`/${botId}/categories/${category.id}`}
             className="flex-grow flex flex-col sm:flex-row items-start sm:items-center gap-4"
           >
-            <div className="w-full sm:w-auto">
-              <span className="text-lg font-medium">{category.name}</span>
+            <div className="w-full sm:w-auto flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/5">
+                <Folder className="w-5 h-5 text-primary" />
+              </div>
+              <span className="text-lg font-medium group-hover:text-primary transition-colors">
+                {category.name}
+              </span>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Порядок:</span>
-                <span className="font-medium">{category.index}</span>
+              <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted">
+                <span className="text-sm text-muted-foreground">Порядок:</span>
+                <span className="font-medium text-foreground">{category.index}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Товаров:</span>
-                <span className="font-medium">{category.products_count}</span>
+              <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted">
+                <Package className="w-4 h-4 text-muted-foreground" />
+                <span className="font-medium text-foreground">{category.products_count}</span>
               </div>
             </div>
           </Link>
           {!disabled && (
             <button
               type="button"
-              className="flex-shrink-0"
+              className="flex-shrink-0 p-2 hover:bg-muted rounded-lg transition-colors"
               aria-label="Перетащить категорию"
               {...attributes}
               {...listeners}
             >
-              <GripVertical className="h-6 w-6 text-gray-400 cursor-grab" />
+              <GripVertical className="h-5 w-5 text-muted-foreground" />
             </button>
           )}
         </div>
@@ -164,7 +171,7 @@ export default function CategoriesList() {
       await reorderCategories(newItems.map(({ id, index }) => ({ id, index })));
     } catch (error) {
       console.error('Ошибка при изменении порядка:', error);
-      setItems(categories); // Восстанавливаем предыдущий порядок в случае ошибки
+      setItems(categories);
     } finally {
       setIsReordering(false);
     }
@@ -172,41 +179,85 @@ export default function CategoriesList() {
 
   return (
     <BotLayout>
-      <div className="w-full px-4 md:px-8">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full px-4 md:px-8"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8"
+        >
           <div className="relative w-full md:w-64">
-            <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+            <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
             <Input
               id="search"
               type="search"
               value={search}
               placeholder="Поиск..."
-              className="pl-10"
+              className="pl-10 bg-muted/50 border-none"
               onChange={(event) => setSearch(event.target.value)}
               disabled={isReordering}
             />
           </div>
-        </div>
+        </motion.div>
 
-        <div className="flex py-4 flex-col md:flex-row justify-between w-full">
-          <div className="mb-4 text-lg">
-            {loading ? <Skeleton className="h-6 w-48 bg-gray-200" /> : `Найдено ${count} категорий`}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="flex py-4 flex-col md:flex-row justify-between w-full gap-4 items-center"
+        >
+          <div className="text-lg font-medium">
+            {loading ? <Skeleton className="h-6 w-48 bg-muted/50" /> : `Найдено ${count} категорий`}
           </div>
 
-          <Button asChild disabled={isReordering}>
-            <Link to="add" className="btn-primary">
+          <Button asChild disabled={isReordering} className="bg-primary hover:bg-primary/90">
+            <Link to="add" className="flex items-center gap-2">
+              <Plus className="w-4 h-4" />
               Добавить категорию
             </Link>
           </Button>
-        </div>
+        </motion.div>
 
         <div className="space-y-4">
           {loading ? (
-            <div className="grid gap-4">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.1,
+                  },
+                },
+              }}
+              className="grid gap-4"
+            >
               {Array.from({ length: 8 }).map((_, idx) => (
-                <CategorySkeleton key={`skeleton-${idx}`} />
+                <motion.div
+                  key={`skeleton-${idx}`}
+                  variants={{
+                    hidden: { opacity: 0, y: 20 },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      transition: {
+                        duration: 0.5,
+                        ease: [0.4, 0, 0.2, 1],
+                      },
+                    },
+                  }}
+                >
+                  <CategorySkeleton />
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           ) : (
             <DndContext
               sensors={sensors}
@@ -215,21 +266,46 @@ export default function CategoriesList() {
               modifiers={[]}
             >
               <SortableContext items={items} strategy={verticalListSortingStrategy}>
-                <div className="grid gap-4">
-                  {items.map((category) => (
-                    <SortableCard
-                      key={category.id}
-                      category={category}
-                      botId={bot?.id}
-                      disabled={!!search}
-                    />
-                  ))}
-                </div>
+                <AnimatePresence>
+                  <motion.div
+                    className="grid gap-4"
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: {
+                        opacity: 1,
+                        transition: {
+                          staggerChildren: 0.1,
+                        },
+                      },
+                    }}
+                  >
+                    {items.map((category) => (
+                      <motion.div
+                        key={category.id}
+                        variants={{
+                          hidden: { opacity: 0, y: 20 },
+                          visible: {
+                            opacity: 1,
+                            y: 0,
+                            transition: {
+                              duration: 0.5,
+                              ease: [0.4, 0, 0.2, 1],
+                            },
+                          },
+                        }}
+                      >
+                        <SortableCard category={category} botId={bot?.id} disabled={!!search} />
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
               </SortableContext>
             </DndContext>
           )}
         </div>
-      </div>
+      </motion.div>
     </BotLayout>
   );
 }

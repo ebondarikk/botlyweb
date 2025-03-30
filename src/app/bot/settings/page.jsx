@@ -3,6 +3,7 @@ import { getDeliverySettings, updateDeliverySettings } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { motion } from 'framer-motion';
 import {
   Select,
   SelectContent,
@@ -20,10 +21,11 @@ import {
 } from '@/components/ui/accordion.tsx';
 import { useBot } from '@/context/BotContext';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Truck, CreditCard, ListTodo, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Truck, CreditCard, ListTodo, ChevronRight, Save } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import BotLayout from '@/app/bot/layout';
 import { z } from 'zod';
+import { Badge } from '@/components/ui/badge';
 
 const formatCurrency = (value) => {
   if (!value && value !== 0) return '';
@@ -213,10 +215,43 @@ export default function SettingsPage() {
     'unavailable_and_paid_on_min_check',
   ].includes(deliverySettings?.condition);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: [0.4, 0, 0.2, 1],
+      },
+    },
+  };
+
   return (
     <BotLayout>
-      <div className="w-full px-4 md:px-8">
-        <div className="flex items-center gap-4 py-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full px-4 md:px-8"
+      >
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex items-center gap-4 py-6"
+        >
           <Button
             variant="ghost"
             size="icon"
@@ -226,168 +261,199 @@ export default function SettingsPage() {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <h1 className="text-2xl font-semibold">Настройки</h1>
-        </div>
+        </motion.div>
 
-        <div className="max-w-3xl mx-auto pb-8">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="max-w-3xl mx-auto pb-8"
+        >
           {/* Настройки доставки */}
-          <Accordion
-            type="single"
-            collapsible
-            defaultValue="delivery"
-            className="rounded-lg border bg-card text-card-foreground shadow-sm mb-6 custom-card"
-          >
-            <AccordionItem value="delivery" className="border-none">
-              <AccordionTrigger className="flex justify-between w-full px-6 py-0">
-                <div className="flex items-center gap-4 py-6">
-                  <div className="p-2 rounded-md bg-primary/10">
-                    <Truck className="w-5 h-5 text-primary" />
+          <motion.div variants={itemVariants} whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
+            <Accordion
+              type="single"
+              collapsible
+              defaultValue="delivery"
+              className="rounded-xl border bg-card text-card-foreground shadow-sm mb-6 custom-card overflow-hidden"
+            >
+              <AccordionItem value="delivery" className="border-none">
+                <AccordionTrigger className="flex justify-between w-full px-6 py-0 hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-4 py-6">
+                    <div className="p-2.5 rounded-xl bg-primary/10">
+                      <Truck className="w-6 h-6 text-primary" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h2 className="text-lg font-medium">Доставка</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Настройте параметры доставки заказов
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 text-left">
-                    <h2 className="text-lg font-medium">Доставка</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Настройте параметры доставки заказов
-                    </p>
-                  </div>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="p-6 space-y-6">
-                  <div className="flex items-center justify-between pb-4">
-                    <Label className="font-medium">Активировать доставку</Label>
-                    <Switch
-                      checked={deliverySettings?.is_active}
-                      onCheckedChange={(checked) =>
-                        setDeliverySettings({ ...deliverySettings, is_active: checked })
-                      }
-                    />
-                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="p-6 space-y-6">
+                    <div className="flex items-center justify-between pb-4 px-4 bg-muted/50 rounded-lg h-[60px]">
+                      <Label className="font-medium">Активировать доставку</Label>
+                      <Switch
+                        checked={deliverySettings?.is_active}
+                        onCheckedChange={(checked) =>
+                          setDeliverySettings({ ...deliverySettings, is_active: checked })
+                        }
+                      />
+                    </div>
 
-                  <div>
-                    <Label className="text-sm font-medium mb-1.5 block">Условия доставки</Label>
-                    <Select
-                      value={deliverySettings.condition}
-                      onValueChange={(value) =>
-                        setDeliverySettings({ ...deliverySettings, condition: value })
-                      }
-                    >
-                      <SelectTrigger className="h-10 bg-background">
-                        <SelectValue placeholder="Выберите условие доставки" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {conditionOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium block">Условия доставки</Label>
+                      <Select
+                        value={deliverySettings.condition}
+                        onValueChange={(value) =>
+                          setDeliverySettings({ ...deliverySettings, condition: value })
+                        }
+                      >
+                        <SelectTrigger className="h-11 bg-background">
+                          <SelectValue placeholder="Выберите условие доставки" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {conditionOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    {needsMinCheck && (
-                      <div>
-                        <Label className="text-sm font-medium mb-1.5 block">
-                          Минимальная сумма заказа
-                        </Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          className={`h-10 bg-background ${errors.min_check ? 'border-red-500' : ''}`}
-                          value={deliverySettings.min_check || ''}
-                          onChange={(e) =>
-                            handleNumberInput(e, 'min_check', deliverySettings, setDeliverySettings)
-                          }
-                          onInput={(e) => {
-                            if (e.target.value.includes('.')) {
-                              const [whole, decimal] = e.target.value.split('.');
-                              if (decimal?.length > 2) {
-                                e.target.value = `${whole}.${decimal.slice(0, 2)}`;
-                              }
+                    <div className="grid grid-cols-2 gap-6">
+                      {needsMinCheck && (
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium block">
+                            Минимальная сумма заказа
+                          </Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            className={`h-11 bg-background ${errors.min_check ? 'border-destructive focus:ring-destructive' : ''}`}
+                            value={deliverySettings.min_check || ''}
+                            onChange={(e) =>
+                              handleNumberInput(
+                                e,
+                                'min_check',
+                                deliverySettings,
+                                setDeliverySettings,
+                              )
                             }
-                          }}
-                          placeholder="0.00"
-                        />
-                        {errors.min_check && (
-                          <p className="text-sm text-red-500 mt-1">{errors.min_check}</p>
-                        )}
-                      </div>
-                    )}
-
-                    {needsCost && (
-                      <div>
-                        <Label className="text-sm font-medium mb-1.5 block">
-                          Стоимость доставки
-                        </Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          className={`h-10 bg-background ${errors.cost ? 'border-red-500' : ''}`}
-                          value={deliverySettings.cost || ''}
-                          onChange={(e) =>
-                            handleNumberInput(e, 'cost', deliverySettings, setDeliverySettings)
-                          }
-                          onInput={(e) => {
-                            if (e.target.value.includes('.')) {
-                              const [whole, decimal] = e.target.value.split('.');
-                              if (decimal?.length > 2) {
-                                e.target.value = `${whole}.${decimal.slice(0, 2)}`;
+                            onInput={(e) => {
+                              if (e.target.value.includes('.')) {
+                                const [whole, decimal] = e.target.value.split('.');
+                                if (decimal?.length > 2) {
+                                  e.target.value = `${whole}.${decimal.slice(0, 2)}`;
+                                }
                               }
-                            }
-                          }}
-                          placeholder="0.00"
-                        />
-                        {errors.cost && <p className="text-sm text-red-500 mt-1">{errors.cost}</p>}
-                      </div>
-                    )}
-                  </div>
+                            }}
+                            placeholder="0.00"
+                          />
+                          {errors.min_check && (
+                            <p className="text-sm text-destructive mt-1.5">{errors.min_check}</p>
+                          )}
+                        </div>
+                      )}
 
-                  <div className="pt-4 border-t">
-                    <Button
-                      onClick={handleSaveDeliverySettings}
-                      disabled={loading}
-                      className="h-10"
-                    >
-                      {loading ? 'Сохранение...' : 'Сохранить'}
-                    </Button>
+                      {needsCost && (
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium block">Стоимость доставки</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            className={`h-11 bg-background ${errors.cost ? 'border-destructive focus:ring-destructive' : ''}`}
+                            value={deliverySettings.cost || ''}
+                            onChange={(e) =>
+                              handleNumberInput(e, 'cost', deliverySettings, setDeliverySettings)
+                            }
+                            onInput={(e) => {
+                              if (e.target.value.includes('.')) {
+                                const [whole, decimal] = e.target.value.split('.');
+                                if (decimal?.length > 2) {
+                                  e.target.value = `${whole}.${decimal.slice(0, 2)}`;
+                                }
+                              }
+                            }}
+                            placeholder="0.00"
+                          />
+                          {errors.cost && (
+                            <p className="text-sm text-destructive mt-1.5">{errors.cost}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-6 border-t">
+                      <Button
+                        onClick={handleSaveDeliverySettings}
+                        disabled={loading}
+                        className="h-11 px-8 flex items-center gap-2"
+                      >
+                        <Save className="w-4 h-4" />
+                        {loading ? 'Сохранение...' : 'Сохранить'}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </motion.div>
 
           {/* Методы оплаты */}
-          <Card className="mb-6 custom-card p-6 cursor-not-allowed bg-opacity-50">
-            <div className="flex items-center gap-4">
-              <div className="p-2 rounded-md bg-primary/10">
-                <CreditCard className="w-5 h-5 text-primary" />
+          <motion.div variants={itemVariants} whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
+            <Card className="mb-6 custom-card p-6 cursor-not-allowed bg-opacity-50 group transition-all duration-300 hover:bg-muted/30">
+              <div className="flex items-center gap-4">
+                <div className="p-2.5 rounded-xl bg-primary/10">
+                  <CreditCard className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-lg font-medium">Методы оплаты</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Настройте способы оплаты для ваших клиентов
+                  </p>
+                </div>
+                <div className="p-2 rounded-full text-muted-foreground/40 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
+                  <ChevronRight className="w-5 h-5" />
+                </div>
               </div>
-              <div className="flex-1">
-                <h2 className="text-lg font-medium">Методы оплаты (Скоро)</h2>
-                <p className="text-sm text-muted-foreground">
-                  Настройте способы оплаты для ваших клиентов
-                </p>
+              <div className="absolute top-2 right-2">
+                <Badge variant="outline" className="text-xs bg-card/80 backdrop-blur-sm">
+                  Скоро
+                </Badge>
               </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            </div>
-          </Card>
+            </Card>
+          </motion.div>
 
           {/* Статусы заказов */}
-          <Card className="custom-card p-6 cursor-not-allowed bg-opacity-50">
-            <div className="flex items-center gap-4">
-              <div className="p-2 rounded-md bg-primary/10">
-                <ListTodo className="w-5 h-5 text-primary" />
+          <motion.div variants={itemVariants} whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
+            <Card className="custom-card p-6 cursor-not-allowed bg-opacity-50 group transition-all duration-300 hover:bg-muted/30">
+              <div className="flex items-center gap-4">
+                <div className="p-2.5 rounded-xl bg-primary/10">
+                  <ListTodo className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-lg font-medium">Статусы заказов</h2>
+                  <p className="text-sm text-muted-foreground">Настройте этапы обработки заказов</p>
+                </div>
+                <div className="p-2 rounded-full text-muted-foreground/40 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
+                  <ChevronRight className="w-5 h-5" />
+                </div>
               </div>
-              <div className="flex-1">
-                <h2 className="text-lg font-medium">Статусы заказов (Скоро)</h2>
-                <p className="text-sm text-muted-foreground">Настройте этапы обработки заказов</p>
+              <div className="absolute top-2 right-2">
+                <Badge variant="outline" className="text-xs bg-card/80 backdrop-blur-sm">
+                  Скоро
+                </Badge>
               </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            </div>
-          </Card>
-        </div>
-      </div>
+            </Card>
+          </motion.div>
+        </motion.div>
+      </motion.div>
     </BotLayout>
   );
 }

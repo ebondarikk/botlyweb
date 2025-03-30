@@ -2,38 +2,40 @@ import * as React from 'react';
 import { useCallback } from 'react';
 import { useUsers } from '@/hooks/use-users';
 import { useBot } from '@/context/BotContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
-import { SearchIcon } from 'lucide-react';
+import { SearchIcon, UserCircle2, ExternalLink, Ban, Shield, Hash } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BotLayout from '@/app/bot/layout';
 import { Switch } from '@/components/ui/switch';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { Badge } from '@/components/ui/badge';
 
 function UserSkeleton() {
   return (
-    <Card className="overflow-hidden custom-card">
-      <CardContent className="p-4">
+    <Card className="overflow-hidden custom-card border-border/50">
+      <CardContent className="p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-col md:flex-row flex-grow gap-1 md:gap-4 flex-wrap">
+          <div className="flex flex-col md:flex-row flex-grow gap-2 md:gap-6 flex-wrap">
             <div className="flex items-center gap-2">
-              <Skeleton className="h-4 w-8 bg-gray-200" />
-              <Skeleton className="h-4 w-16 bg-gray-200" />
+              <Skeleton className="h-4 w-8 bg-muted/50" />
+              <Skeleton className="h-4 w-16 bg-muted/50" />
             </div>
             <div className="flex items-center gap-2">
-              <Skeleton className="h-4 w-12 bg-gray-200" />
-              <Skeleton className="h-4 w-24 bg-gray-200" />
+              <Skeleton className="h-4 w-12 bg-muted/50" />
+              <Skeleton className="h-4 w-24 bg-muted/50" />
             </div>
             <div className="flex items-center gap-2">
-              <Skeleton className="h-4 w-20 bg-gray-200" />
-              <Skeleton className="h-4 w-32 bg-gray-200" />
+              <Skeleton className="h-4 w-20 bg-muted/50" />
+              <Skeleton className="h-4 w-32 bg-muted/50" />
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Skeleton className="h-4 w-24 bg-gray-200" />
-            <Skeleton className="h-6 w-10 rounded-full bg-gray-200" />
+            <Skeleton className="h-4 w-24 bg-muted/50" />
+            <Skeleton className="h-6 w-10 rounded-full bg-muted/50" />
           </div>
         </div>
       </CardContent>
@@ -68,47 +70,106 @@ export default function UsersList() {
 
   return (
     <BotLayout>
-      <div className="w-full px-4 md:px-8">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-          <div className="w-full md:w-fit">
-            <Tabs value={blockedFilter} onValueChange={setBlockedFilter}>
-              <TabsList className="w-full">
-                <TabsTrigger className="w-full" value="">
-                  Все
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full px-4 md:px-8"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex flex-col gap-4 mb-8"
+        >
+          <div className="flex justify-center sm:justify-start">
+            <Tabs
+              value={blockedFilter}
+              onValueChange={setBlockedFilter}
+              className="w-full sm:w-fit"
+            >
+              <TabsList className="w-full sm:w-auto bg-muted/50 p-1">
+                <TabsTrigger
+                  value=""
+                  className="flex-1 sm:flex-initial data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-w-[100px]"
+                >
+                  <Shield className="w-4 h-4 mr-2 shrink-0" />
+                  <span className="truncate">Все</span>
                 </TabsTrigger>
-                <TabsTrigger className="w-full" value="false">
-                  Активные
+                <TabsTrigger
+                  value="false"
+                  className="flex-1 sm:flex-initial data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-w-[100px]"
+                >
+                  <UserCircle2 className="w-4 h-4 mr-2 shrink-0" />
+                  <span className="truncate">Активные</span>
                 </TabsTrigger>
-                <TabsTrigger className="w-full" value="true">
-                  Заблокированные
+                <TabsTrigger
+                  value="true"
+                  className="flex-1 sm:flex-initial data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-w-[100px]"
+                >
+                  <Ban className="w-4 h-4 mr-2 shrink-0" />
+                  <span className="truncate">Заблокированные</span>
                 </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
-          <div className="relative w-full md:w-64">
-            <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+          <div className="relative w-full">
+            <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
             <Input
               id="search"
               type="search"
               value={search}
               placeholder="Поиск..."
-              className="pl-10"
+              className="pl-10 bg-muted/50 border-none w-full"
               onChange={(event) => setSearch(event.target.value)}
             />
           </div>
-        </div>
+        </motion.div>
 
-        <div className="mb-4 text-lg">
-          {loading ? <Skeleton className="h-6 w-48" /> : `Найдено ${count} клиентов`}
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mb-6 text-lg font-medium"
+        >
+          {loading ? <Skeleton className="h-6 w-48 bg-muted/50" /> : `Найдено ${count} клиентов`}
+        </motion.div>
 
         <div className="space-y-4">
           {loading && !users.length && (
-            <div className="grid gap-4">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.1,
+                  },
+                },
+              }}
+              className="grid gap-4"
+            >
               {Array.from({ length: 8 }).map((_, idx) => (
-                <UserSkeleton key={idx} />
+                <motion.div
+                  key={`skeleton-${idx}`}
+                  variants={{
+                    hidden: { opacity: 0, y: 20 },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      transition: {
+                        duration: 0.5,
+                        ease: [0.4, 0, 0.2, 1],
+                      },
+                    },
+                  }}
+                >
+                  <UserSkeleton />
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
           <InfiniteScroll
             dataLength={users.length}
@@ -116,62 +177,113 @@ export default function UsersList() {
             hasMore={users.length < count}
             scrollThreshold={0.5}
             loader={
-              <div className="grid gap-4 mt-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="grid gap-4 mt-4"
+              >
                 {Array.from({ length: 3 }).map((_, idx) => (
-                  <UserSkeleton key={idx} />
+                  <UserSkeleton key={`loader-${idx}`} />
                 ))}
-              </div>
+              </motion.div>
             }
           >
-            <div className="grid gap-4">
-              {users.map((user) => (
-                <Card key={user.id} className="overflow-hidden custom-card">
-                  <CardContent className="p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                      <div className="flex flex-col md:flex-row flex-grow gap-1 md:gap-4 flex-wrap">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-500">ID:</span>
-                          <span className="font-medium">{user.id}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-500">Имя:</span>
-                          <span className="font-medium">{user.first_name}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-500">Username:</span>
-                          <span className="font-medium">
-                            {user.username ? (
-                              <a
-                                href={`https://t.me/${user.username}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="hover:text-gray-400 underline"
+            <AnimatePresence>
+              <motion.div className="grid gap-4">
+                {users.map((user) => (
+                  <motion.div
+                    key={user.id}
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          duration: 0.5,
+                          ease: [0.4, 0, 0.2, 1],
+                        },
+                      },
+                    }}
+                  >
+                    <Card
+                      className={`overflow-hidden custom-card border-border/50 hover:border-primary/50 transition-all duration-300 group
+                        ${user.is_blocked ? 'bg-destructive/5' : 'hover:bg-muted/30'}`}
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                          <div className="flex items-center gap-4 flex-1 min-w-0">
+                            <div
+                              className={`p-2.5 rounded-xl shrink-0 ${user.is_blocked ? 'bg-destructive/10' : 'bg-primary/10'}`}
+                            >
+                              <UserCircle2
+                                className={`w-6 h-6 ${user.is_blocked ? 'text-destructive' : 'text-primary'}`}
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-3 mb-1.5 flex-wrap">
+                                <span className="font-medium text-lg group-hover:text-primary transition-colors truncate">
+                                  {user.first_name}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <Hash className="w-3.5 h-3.5" />
+                                  <span>{user.id}</span>
+                                </div>
+                                {user.username && (
+                                  <>
+                                    <span className="w-1 h-1 rounded-full bg-border shrink-0" />
+                                    <a
+                                      href={`https://t.me/${user.username}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-1.5 text-primary hover:text-primary/80 transition-colors shrink-0"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      @{user.username}
+                                      <ExternalLink className="w-3.5 h-3.5" />
+                                    </a>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 ml-auto">
+                            {user.is_blocked ? (
+                              <Badge
+                                variant="outline"
+                                className="flex items-center gap-1.5 border-destructive/20 bg-destructive/5 whitespace-nowrap"
                               >
-                                @{user.username}
-                              </a>
+                                <Ban className="w-3.5 h-3.5 text-destructive shrink-0" />
+                                <span className="text-destructive">Заблокирован</span>
+                              </Badge>
                             ) : (
-                              '—'
+                              <Badge
+                                variant="outline"
+                                className="flex items-center gap-1.5 border-primary/20 bg-primary/5 whitespace-nowrap"
+                              >
+                                <Shield className="w-3.5 h-3.5 text-primary shrink-0" />
+                                <span className="text-primary">Активен</span>
+                              </Badge>
                             )}
-                          </span>
+                            <Switch
+                              checked={user.is_blocked}
+                              disabled={user.id === loadingUserId}
+                              onCheckedChange={(checked) => handleBlockToggle(user.id, checked)}
+                              id={`block-toggle-${user.id}`}
+                            />
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-500">Заблокирован</span>
-                        <Switch
-                          checked={user.is_blocked}
-                          disabled={user.id === loadingUserId}
-                          onCheckedChange={(checked) => handleBlockToggle(user.id, checked)}
-                          id={`block-toggle-${user.id}`}
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
           </InfiniteScroll>
         </div>
-      </div>
+      </motion.div>
     </BotLayout>
   );
 }

@@ -76,18 +76,23 @@ const items = [
     url: (bot_id) => `/${bot_id}/settings`,
     icon: Settings,
   },
-  {
-    name: 'Аналитика',
-    url: (bot_id) => `/${bot_id}/statistic`,
-    icon: ChartNoAxesCombined,
-    disabled: true,
-  },
-  {
-    name: 'Расписание',
-    url: (bot_id) => `/${bot_id}/schedule`,
-    icon: CalendarClock,
-    disabled: true,
-  },
+  // {
+  //   name: 'Аналитика',
+  //   url: (bot_id) => `/${bot_id}/statistic`,
+  //   icon: ChartNoAxesCombined,
+  //   disabled: true,
+  // },
+  // {
+  //   name: 'Расписание',
+  //   url: (bot_id) => `/${bot_id}/schedule`,
+  //   icon: CalendarClock,
+  //   disabled: true,
+  // },
+  // {
+  //   name: 'Тариф и оплата',
+  //   url: (bot_id) => `/${bot_id}/subscription`,
+  //   icon: CreditCard,
+  // },
 ];
 
 export default function BotLayout({ children }) {
@@ -210,9 +215,11 @@ function BotLayoutContent({ children }) {
                       <BadgeCheck />
                       Аккаунт (скоро)
                     </DropdownMenuItem>
-                    <DropdownMenuItem disabled>
-                      <CreditCard />
-                      Оплата (скоро)
+                    <DropdownMenuItem asChild>
+                      <NavLink to={`/${bot?.id}/billing`}>
+                        <CreditCard />
+                        Оплата
+                      </NavLink>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={onLogout}>
                       <LogOut />
