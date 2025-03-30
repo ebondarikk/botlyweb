@@ -80,9 +80,9 @@ export default function UsersList() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex flex-col gap-4 mb-8"
+          className="flex flex-col lg:flex-row gap-4 mb-8"
         >
-          <div className="flex justify-center sm:justify-start">
+          <div className="flex justify-center sm:justify-start flex-1">
             <Tabs
               value={blockedFilter}
               onValueChange={setBlockedFilter}
@@ -113,14 +113,14 @@ export default function UsersList() {
               </TabsList>
             </Tabs>
           </div>
-          <div className="relative w-full">
-            <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+          <div className="relative w-full lg:w-80">
+            <SearchIcon className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               id="search"
               type="search"
               value={search}
               placeholder="Поиск..."
-              className="pl-10 bg-muted/50 border-none w-full"
+              className="pl-9 py-2 bg-muted/50 border-none w-full"
               onChange={(event) => setSearch(event.target.value)}
             />
           </div>
@@ -209,24 +209,24 @@ export default function UsersList() {
                       className={`overflow-hidden custom-card border-border/50 hover:border-primary/50 transition-all duration-300 group
                         ${user.is_blocked ? 'bg-destructive/5' : 'hover:bg-muted/30'}`}
                     >
-                      <CardContent className="p-6">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                          <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <CardContent className="p-4">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
                             <div
-                              className={`p-2.5 rounded-xl shrink-0 ${user.is_blocked ? 'bg-destructive/10' : 'bg-primary/10'}`}
+                              className={`p-2 rounded-lg shrink-0 ${user.is_blocked ? 'bg-destructive/10' : 'bg-primary/10'}`}
                             >
                               <UserCircle2
-                                className={`w-6 h-6 ${user.is_blocked ? 'text-destructive' : 'text-primary'}`}
+                                className={`w-5 h-5 ${user.is_blocked ? 'text-destructive' : 'text-primary'}`}
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-3 mb-1.5 flex-wrap">
-                                <span className="font-medium text-lg group-hover:text-primary transition-colors truncate">
+                              <div className="flex items-center gap-3 mb-1 flex-wrap">
+                                <span className="font-medium text-base group-hover:text-primary transition-colors truncate">
                                   {user.first_name}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
-                                <div className="flex items-center gap-2 shrink-0">
+                                <div className="flex items-center gap-1.5 shrink-0">
                                   <Hash className="w-3.5 h-3.5" />
                                   <span>{user.id}</span>
                                 </div>

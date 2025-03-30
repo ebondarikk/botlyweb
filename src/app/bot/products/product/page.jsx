@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useForm, useFieldArray } from 'react-hook-form';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Form,
   FormField,
@@ -32,8 +33,21 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 
-import { ArrowLeft } from 'lucide-react';
+import {
+  ArrowLeft,
+  ImageIcon,
+  Package,
+  Layers,
+  Tag,
+  FileText,
+  Settings2,
+  Plus,
+  Trash2,
+  Save,
+  AlertTriangle,
+} from 'lucide-react';
 
 import ImageUpload from '@/components/image-upload';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -80,6 +94,25 @@ function getDefaultValues(product) {
       })) || [],
   };
 }
+
+const pageVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.1,
+      duration: 0.5,
+      ease: [0.4, 0, 0.2, 1],
+    },
+  }),
+};
 
 export default function ProductFormPage() {
   const params = useParams();
@@ -178,45 +211,73 @@ export default function ProductFormPage() {
 
   return (
     <BotLayout>
-      <div className="w-full px-4 md:px-8">
-        <div className="flex items-center gap-4 py-6">
+      <motion.div
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        className="w-full px-4 md:px-8"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-4 py-6"
+        >
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-full hover:bg-muted/80"
+            className="rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
             onClick={() => navigate(-1)}
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-2xl font-semibold">
-            {existingProduct ? 'Редактировать товар' : 'Добавить товар'}
-          </h1>
-        </div>
-
-        {loading && (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          <div>
+            <h1 className="text-2xl font-semibold">
+              {existingProduct ? 'Редактировать товар' : 'Добавить товар'}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">Заполните информацию о товаре</p>
           </div>
-        )}
+        </motion.div>
 
-        {!loading && (
+        {loading ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center justify-center py-8"
+          >
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          </motion.div>
+        ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <Card className="custom-card border-border/50">
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {/* Левая колонка */}
-                    <div className="space-y-8">
-                      <div className="bg-card rounded-xl space-y-8">
-                        {/* 1. Изображение */}
+              <motion.div
+                variants={{
+                  visible: {
+                    transition: {
+                      staggerChildren: 0.1,
+                    },
+                  },
+                }}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+              >
+                {/* Левая колонка */}
+                <div className="space-y-6">
+                  <motion.div custom={0} variants={cardVariants}>
+                    <Card className="custom-card border-border/50 overflow-hidden">
+                      <CardHeader className="border-b bg-muted/40 px-6">
+                        <div className="flex items-center gap-2">
+                          <ImageIcon className="w-5 h-5 text-primary" />
+                          <CardTitle className="text-base">Изображение товара</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-6">
                         <FormField
                           control={form.control}
                           name="image"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-base font-semibold mb-4 block">
-                                Изображение товара
-                              </FormLabel>
                               <div className="mt-2">
                                 <ImageUpload
                                   value={field.value}
@@ -229,18 +290,25 @@ export default function ProductFormPage() {
                             </FormItem>
                           )}
                         />
-                      </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
 
-                      <div className="bg-card rounded-xl space-y-8">
-                        {/* 2. Название */}
+                  <motion.div custom={1} variants={cardVariants}>
+                    <Card className="custom-card border-border/50 overflow-hidden">
+                      <CardHeader className="border-b bg-muted/40 px-6">
+                        <div className="flex items-center gap-2">
+                          <Package className="w-5 h-5 text-primary" />
+                          <CardTitle className="text-base">Основная информация</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-6 space-y-6">
                         <FormField
                           control={form.control}
                           name="name"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-base font-semibold mb-3 block">
-                                Название
-                              </FormLabel>
+                              <FormLabel>Название</FormLabel>
                               <FormControl>
                                 <Input className="h-11" {...field} />
                               </FormControl>
@@ -249,15 +317,12 @@ export default function ProductFormPage() {
                           )}
                         />
 
-                        {/* 3. Цена */}
                         <FormField
                           control={form.control}
                           name="price"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-base font-semibold mb-3 block">
-                                Цена
-                              </FormLabel>
+                              <FormLabel>Цена</FormLabel>
                               <FormControl>
                                 <Input
                                   className="h-11"
@@ -272,15 +337,12 @@ export default function ProductFormPage() {
                           )}
                         />
 
-                        {/* 4. Категория */}
                         <FormField
                           control={form.control}
                           name="category"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-base font-semibold mb-3 block">
-                                Категория
-                              </FormLabel>
+                              <FormLabel>Категория</FormLabel>
                               <Select
                                 value={field.value || ''}
                                 onValueChange={(val) => field.onChange(val === '-' ? '' : val)}
@@ -304,15 +366,12 @@ export default function ProductFormPage() {
                           )}
                         />
 
-                        {/* 5. Описание */}
                         <FormField
                           control={form.control}
                           name="description"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-base font-semibold mb-3 block">
-                                Описание
-                              </FormLabel>
+                              <FormLabel>Описание</FormLabel>
                               <FormControl>
                                 <Textarea className="min-h-[160px] resize-y" {...field} />
                               </FormControl>
@@ -320,30 +379,39 @@ export default function ProductFormPage() {
                             </FormItem>
                           )}
                         />
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </div>
 
-                    {/* Правая колонка */}
-                    <div className="space-y-8">
-                      <div className="bg-card rounded-xl space-y-8">
-                        {/* Тип продукта */}
+                {/* Правая колонка */}
+                <div className="space-y-6">
+                  <motion.div custom={2} variants={cardVariants}>
+                    <Card className="custom-card border-border/50 overflow-hidden">
+                      <CardHeader className="border-b bg-muted/40 px-6">
+                        <div className="flex items-center gap-2">
+                          <Settings2 className="w-5 h-5 text-primary" />
+                          <CardTitle className="text-base">Настройки товара</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-6 space-y-6">
                         <FormField
                           control={form.control}
                           name="grouped"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-base font-semibold mb-3 block">
-                                Тип товара
-                              </FormLabel>
+                              <FormLabel>Тип товара</FormLabel>
                               <Tabs
                                 value={field.value ? 'grouped' : 'simple'}
                                 onValueChange={handleTabsChange}
                               >
                                 <TabsList className="w-full">
                                   <TabsTrigger value="simple" className="w-1/2">
+                                    <Package className="w-4 h-4 mr-2" />
                                     Простой
                                   </TabsTrigger>
                                   <TabsTrigger value="grouped" className="w-1/2">
+                                    <Layers className="w-4 h-4 mr-2" />
                                     Сгруппированный
                                   </TabsTrigger>
                                 </TabsList>
@@ -352,59 +420,60 @@ export default function ProductFormPage() {
                           )}
                         />
 
-                        {/* Настройки товара */}
-                        <div className="space-y-6">
-                          <h3 className="text-base font-semibold">Настройки товара</h3>
+                        <div className="space-y-4 pl-1">
+                          <FormField
+                            control={form.control}
+                            name="frozen"
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center space-x-3">
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    id="product-frozen"
+                                  />
+                                  <FormLabel
+                                    htmlFor="product-frozen"
+                                    className="text-sm font-medium cursor-pointer"
+                                  >
+                                    Скрыть товар
+                                  </FormLabel>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                          <div className="space-y-4 pl-1">
-                            <FormField
-                              control={form.control}
-                              name="frozen"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <div className="flex items-center space-x-3">
-                                    <Switch
-                                      checked={field.value}
-                                      onCheckedChange={field.onChange}
-                                      id="product-frozen"
-                                    />
-                                    <FormLabel
-                                      htmlFor="product-frozen"
-                                      className="text-sm font-medium cursor-pointer"
-                                    >
-                                      Скрыть товар
-                                    </FormLabel>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
+                          <FormField
+                            control={form.control}
+                            name="warehouse"
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center space-x-3">
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    disabled={form.watch('grouped')}
+                                    id="product-warehouse"
+                                  />
+                                  <FormLabel
+                                    htmlFor="product-warehouse"
+                                    className="text-sm font-medium cursor-pointer"
+                                  >
+                                    Учитывать склад
+                                  </FormLabel>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                            <FormField
-                              control={form.control}
-                              name="warehouse"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <div className="flex items-center space-x-3">
-                                    <Switch
-                                      checked={field.value}
-                                      onCheckedChange={field.onChange}
-                                      disabled={form.watch('grouped')}
-                                      id="product-warehouse"
-                                    />
-                                    <FormLabel
-                                      htmlFor="product-warehouse"
-                                      className="text-sm font-medium cursor-pointer"
-                                    >
-                                      Учитывать склад
-                                    </FormLabel>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            {form.watch('warehouse') && (
+                          {form.watch('warehouse') && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                            >
                               <FormField
                                 control={form.control}
                                 name="warehouse_count"
@@ -425,162 +494,222 @@ export default function ProductFormPage() {
                                   </FormItem>
                                 )}
                               />
-                            )}
-                          </div>
+                            </motion.div>
+                          )}
                         </div>
-                      </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
 
-                      {/* Варианты товара (если сгруппированный) */}
-                      {form.watch('grouped') && (
-                        <div className="bg-card rounded-xl space-y-6">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-base font-semibold">Варианты товара</h3>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                append({
-                                  name: '',
-                                  frozen: false,
-                                  warehouse: false,
-                                  warehouse_count: 0,
-                                })
-                              }
-                            >
-                              Добавить вариант
-                            </Button>
-                          </div>
+                  {/* Варианты товара */}
+                  <AnimatePresence>
+                    {form.watch('grouped') && (
+                      <motion.div
+                        custom={3}
+                        variants={cardVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="hidden"
+                      >
+                        <Card className="custom-card border-border/50 overflow-hidden">
+                          <CardHeader className="border-b bg-muted/40 px-6">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Layers className="w-5 h-5 text-primary" />
+                                <CardTitle className="text-base">Варианты товара</CardTitle>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  append({
+                                    name: '',
+                                    frozen: false,
+                                    warehouse: false,
+                                    warehouse_count: 0,
+                                  })
+                                }
+                                className="h-8 px-3"
+                              >
+                                <Plus className="w-4 h-4 mr-1" />
+                                Добавить
+                              </Button>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="p-6">
+                            <AnimatePresence>
+                              {fields.length > 0 ? (
+                                <motion.div className="grid gap-6">
+                                  {fields.map((fieldItem, idx) => (
+                                    <motion.div
+                                      key={fieldItem.id}
+                                      initial={{ opacity: 0, y: 20 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      exit={{ opacity: 0, y: -20 }}
+                                      className="bg-background border-2 border-border/50 shadow-sm rounded-xl p-6 space-y-6"
+                                    >
+                                      <div className="flex items-center justify-between">
+                                        <Badge variant="outline" className="h-6">
+                                          Вариант #{idx + 1}
+                                        </Badge>
+                                        {form.watch('subproducts')?.length > 1 && (
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-destructive hover:text-destructive/90 hover:bg-destructive/10 h-8 px-3"
+                                            onClick={() => remove(idx)}
+                                          >
+                                            <Trash2 className="w-4 h-4 mr-1" />
+                                            Удалить
+                                          </Button>
+                                        )}
+                                      </div>
 
-                          {fields.length > 0 ? (
-                            <div className="grid gap-6">
-                              {fields.map((fieldItem, idx) => (
-                                <div
-                                  key={fieldItem.id}
-                                  className="bg-muted/40 rounded-xl p-6 space-y-6"
-                                >
-                                  <div className="flex items-center justify-between">
-                                    <h4 className="font-medium">Вариант #{idx + 1}</h4>
-                                    {form.watch('subproducts')?.length > 1 && (
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
-                                        onClick={() => remove(idx)}
-                                      >
-                                        Удалить
-                                      </Button>
-                                    )}
-                                  </div>
-
-                                  <FormField
-                                    control={form.control}
-                                    name={`subproducts.${idx}.name`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel className="text-sm mb-2 block">
-                                          Название варианта
-                                        </FormLabel>
-                                        <FormControl>
-                                          <Input className="h-11" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-
-                                  <div className="space-y-4 pl-1">
-                                    <FormField
-                                      control={form.control}
-                                      name={`subproducts.${idx}.frozen`}
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <div className="flex items-center space-x-3">
-                                            <Switch
-                                              checked={field.value}
-                                              onCheckedChange={field.onChange}
-                                              id={`sub-frozen-${idx}`}
-                                            />
-                                            <FormLabel
-                                              htmlFor={`sub-frozen-${idx}`}
-                                              className="text-sm font-medium cursor-pointer"
-                                            >
-                                              Скрыть вариант
-                                            </FormLabel>
-                                          </div>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-
-                                    <FormField
-                                      control={form.control}
-                                      name={`subproducts.${idx}.warehouse`}
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <div className="flex items-center space-x-3">
-                                            <Switch
-                                              checked={field.value}
-                                              onCheckedChange={field.onChange}
-                                              id={`sub-warehouse-${idx}`}
-                                            />
-                                            <FormLabel
-                                              htmlFor={`sub-warehouse-${idx}`}
-                                              className="text-sm font-medium cursor-pointer"
-                                            >
-                                              Учитывать склад
-                                            </FormLabel>
-                                          </div>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-
-                                    {form.getValues(`subproducts.${idx}.warehouse`) && (
                                       <FormField
                                         control={form.control}
-                                        name={`subproducts.${idx}.warehouse_count`}
+                                        name={`subproducts.${idx}.name`}
                                         render={({ field }) => (
-                                          <FormItem className="pl-10">
+                                          <FormItem>
                                             <FormLabel className="text-sm mb-2 block">
-                                              Количество на складе
+                                              Название варианта
                                             </FormLabel>
                                             <FormControl>
-                                              <Input
-                                                type="number"
-                                                min="0"
-                                                className="w-36 h-11"
-                                                {...field}
-                                              />
+                                              <Input className="h-11" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                           </FormItem>
                                         )}
                                       />
-                                    )}
+
+                                      <div className="space-y-4 pl-1">
+                                        <FormField
+                                          control={form.control}
+                                          name={`subproducts.${idx}.frozen`}
+                                          render={({ field }) => (
+                                            <FormItem>
+                                              <div className="flex items-center space-x-3">
+                                                <Switch
+                                                  checked={field.value}
+                                                  onCheckedChange={field.onChange}
+                                                  id={`sub-frozen-${idx}`}
+                                                />
+                                                <FormLabel
+                                                  htmlFor={`sub-frozen-${idx}`}
+                                                  className="text-sm font-medium cursor-pointer"
+                                                >
+                                                  Скрыть вариант
+                                                </FormLabel>
+                                              </div>
+                                              <FormMessage />
+                                            </FormItem>
+                                          )}
+                                        />
+
+                                        <FormField
+                                          control={form.control}
+                                          name={`subproducts.${idx}.warehouse`}
+                                          render={({ field }) => (
+                                            <FormItem>
+                                              <div className="flex items-center space-x-3">
+                                                <Switch
+                                                  checked={field.value}
+                                                  onCheckedChange={field.onChange}
+                                                  id={`sub-warehouse-${idx}`}
+                                                />
+                                                <FormLabel
+                                                  htmlFor={`sub-warehouse-${idx}`}
+                                                  className="text-sm font-medium cursor-pointer"
+                                                >
+                                                  Учитывать склад
+                                                </FormLabel>
+                                              </div>
+                                              <FormMessage />
+                                            </FormItem>
+                                          )}
+                                        />
+
+                                        <AnimatePresence>
+                                          {form.getValues(`subproducts.${idx}.warehouse`) && (
+                                            <motion.div
+                                              initial={{ opacity: 0, height: 0 }}
+                                              animate={{ opacity: 1, height: 'auto' }}
+                                              exit={{ opacity: 0, height: 0 }}
+                                            >
+                                              <FormField
+                                                control={form.control}
+                                                name={`subproducts.${idx}.warehouse_count`}
+                                                render={({ field }) => (
+                                                  <FormItem className="pl-10">
+                                                    <FormLabel className="text-sm mb-2 block">
+                                                      Количество на складе
+                                                    </FormLabel>
+                                                    <FormControl>
+                                                      <Input
+                                                        type="number"
+                                                        min="0"
+                                                        className="w-36 h-11"
+                                                        {...field}
+                                                      />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                  </FormItem>
+                                                )}
+                                              />
+                                            </motion.div>
+                                          )}
+                                        </AnimatePresence>
+                                      </div>
+                                    </motion.div>
+                                  ))}
+                                </motion.div>
+                              ) : (
+                                <motion.div
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  className="flex flex-col items-center justify-center gap-4 py-8 bg-muted/40 rounded-xl"
+                                >
+                                  <div className="p-3 rounded-full bg-primary/10">
+                                    <Layers className="w-6 h-6 text-primary" />
                                   </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-sm text-muted-foreground text-center py-8 bg-muted/40 rounded-xl">
-                              Нет вариантов товара. Добавьте хотя бы один вариант.
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                                  <p className="text-sm text-muted-foreground text-center">
+                                    Нет вариантов товара
+                                    <br />
+                                    Добавьте хотя бы один вариант
+                                  </p>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
 
-                  {form.formState.errors.global && (
-                    <div className="bg-destructive/10 text-destructive text-sm rounded-xl p-4 mt-6">
-                      {form.formState.errors.global.message}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              {form.formState.errors.global && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-3 bg-destructive/10 text-destructive rounded-xl p-4"
+                >
+                  <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+                  <p className="text-sm">{form.formState.errors.global.message}</p>
+                </motion.div>
+              )}
 
-              <div className="flex flex-col sm:flex-row justify-between gap-4">
-                <Button type="submit" disabled={saving} className="sm:px-12 h-11">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="flex flex-col sm:flex-row justify-between gap-4"
+              >
+                <Button
+                  type="submit"
+                  disabled={saving}
+                  className="sm:px-12 h-11 flex items-center gap-2"
+                >
+                  <Save className="w-4 h-4" />
                   {saving ? 'Сохранение...' : 'Сохранить'}
                 </Button>
 
@@ -590,14 +719,18 @@ export default function ProductFormPage() {
                       <Button
                         type="button"
                         variant="outline"
-                        className="border-destructive text-destructive hover:bg-destructive/10 h-11"
+                        className="border-destructive text-destructive hover:bg-destructive/10 h-11 flex items-center gap-2"
                       >
+                        <Trash2 className="w-4 h-4" />
                         Удалить товар
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Удаление товара</DialogTitle>
+                        <DialogTitle className="flex items-center gap-2">
+                          <AlertTriangle className="w-5 h-5 text-destructive" />
+                          Удаление товара
+                        </DialogTitle>
                         <DialogDescription className="pt-2">
                           Вы действительно хотите удалить этот товар? Это действие нельзя отменить.
                           <p className="mt-2 text-muted-foreground">
@@ -619,18 +752,20 @@ export default function ProductFormPage() {
                           variant="destructive"
                           onClick={onDelete}
                           disabled={deleting}
+                          className="flex items-center gap-2"
                         >
+                          <Trash2 className="w-4 h-4" />
                           {deleting ? 'Удаление...' : 'Удалить'}
                         </Button>
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
                 )}
-              </div>
+              </motion.div>
             </form>
           </Form>
         )}
-      </div>
+      </motion.div>
     </BotLayout>
   );
 }

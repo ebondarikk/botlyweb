@@ -19,9 +19,9 @@ function Header({ activeTab }) {
         <SidebarTrigger />
         <div className="hidden md:block h-4 w-[1px] bg-border/50" />
         <div className="flex items-center gap-1 text-muted-foreground">
-          <Bot className="w-4 h-4" />
-          <span className="text-sm font-medium">Botly</span>
-          <ChevronRight className="w-4 h-4" />
+          {/* <Bot className="w-4 h-4" /> */}
+          {/* <span className="text-sm font-medium">Botly</span> */}
+          {/* <ChevronRight className="w-4 h-4" /> */}
           <motion.div
             key={activeTab?.name}
             initial={{ opacity: 0, x: -10 }}
@@ -29,7 +29,7 @@ function Header({ activeTab }) {
             className="flex items-center"
           >
             {activeTab?.icon && <activeTab.icon className="w-4 h-4 mr-1.5 text-primary" />}
-            <span className="font-medium text-foreground">{activeTab?.name}</span>
+            <h1 className="text-foreground text-lg font-medium">{activeTab?.name}</h1>
           </motion.div>
         </div>
       </div>

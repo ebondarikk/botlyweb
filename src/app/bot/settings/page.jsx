@@ -92,12 +92,8 @@ const deliverySettingsSchema = z
       'unavailable_and_paid_on_min_check',
       'unavailable_and_free_on_min_check',
     ]),
-    min_check: z
-      .union([z.number().positive('Минимальная сумма заказа должна быть больше 0'), z.null()])
-      .optional(),
-    cost: z
-      .union([z.number().positive('Стоимость доставки должна быть больше 0'), z.null()])
-      .optional(),
+    min_check: z.number().nullable().optional(),
+    cost: z.number().nullable().optional(),
   })
   .superRefine((data, ctx) => {
     const needsMinCheck = [
@@ -112,7 +108,7 @@ const deliverySettingsSchema = z
       'unavailable_and_paid_on_min_check',
     ].includes(data.condition);
 
-    if (needsMinCheck && !data.min_check) {
+    if (needsMinCheck && (!data.min_check || data.min_check <= 0)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Укажите минимальную сумму заказа',
@@ -120,7 +116,7 @@ const deliverySettingsSchema = z
       });
     }
 
-    if (needsCost && !data.cost) {
+    if (needsCost && (!data.cost || data.cost <= 0)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Укажите стоимость доставки',
