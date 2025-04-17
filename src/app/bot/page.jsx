@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -15,8 +16,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { updateBot } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Package, CreditCard, TrendingUp, Bot, ExternalLink, Save } from 'lucide-react';
-
+import {
+  Users,
+  Package,
+  CreditCard,
+  TrendingUp,
+  Bot,
+  ExternalLink,
+  Save,
+  AlertTriangle,
+  Ban,
+  Crown,
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -27,6 +39,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { ORDER_STATUSES } from '@/lib/utils';
+import { TARIFF_THEMES } from '@/lib/constants/tariffs';
 import BotLayout from './layout';
 
 // Функция для форматирования даты
@@ -48,6 +61,42 @@ const formatChartDate = (dateString) => {
     day: '2-digit',
     month: '2-digit',
   }).format(date);
+};
+
+const getStatusInfo = (status, botId) => {
+  switch (status) {
+    case 'active':
+      return { color: 'bg-green-500/10 text-green-500', text: 'Активен' };
+    case 'failed_attempt':
+      return {
+        color: 'bg-yellow-500/10 text-yellow-500',
+        text: 'Проблема с оплатой',
+        icon: AlertTriangle,
+        link: `/${botId}/subscription`,
+      };
+    case 'blocked':
+      return {
+        color: 'bg-red-500/10 text-red-500',
+        text: 'Заблокирован',
+        icon: Ban,
+        link: `/${botId}/subscription`,
+      };
+    default:
+      return { color: 'bg-gray-500/10 text-gray-500', text: 'Неизвестно' };
+  }
+};
+
+const getBadgeClasses = (theme) => {
+  if (theme.sort === 0) return 'bg-zinc-100 text-zinc-600';
+  if (theme.sort === 1) return 'bg-blue-100 text-blue-600';
+  if (theme.sort === 2) return 'bg-purple-100 text-purple-600';
+  if (theme.sort === 3) return 'bg-amber-100 text-amber-600';
+  return 'bg-zinc-100 text-zinc-600';
+};
+
+const getThemeIcon = (theme) => {
+  const Icon = theme?.icon || Package;
+  return <Icon className="w-3 h-3" />;
 };
 
 function BotPage() {
@@ -111,6 +160,10 @@ function BotPage() {
     { title: 'Средний чек', value: `${bot?.average_bill} ${bot?.currency}`, icon: CreditCard },
   ];
 
+  const statusInfo = bot ? getStatusInfo(bot.status, bot.id) : null;
+  const theme = bot ? TARIFF_THEMES[bot.tariff?.sort] || TARIFF_THEMES.default : null;
+  const badgeClasses = theme ? getBadgeClasses(theme) : '';
+
   return (
     <BotLayout>
       <div className="w-full">
@@ -127,18 +180,42 @@ function BotPage() {
                 <Bot className="w-8 h-8 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-2xl font-semibold">
-                  {loading ? <Skeleton className="h-8 w-40" /> : bot?.fullname}
-                </CardTitle>
+                <div className="flex items-center gap-3">
+                  <CardTitle className="text-2xl font-semibold">
+                    {loading ? <Skeleton className="h-8 w-40" /> : bot?.fullname}
+                  </CardTitle>
+                  {!loading && (
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant="secondary"
+                        className={`${badgeClasses} flex items-center gap-1`}
+                      >
+                        {theme && getThemeIcon(theme)}
+                        {bot?.tariff?.name}
+                      </Badge>
+                      {statusInfo && bot?.status !== 'active' && (
+                        <Link to={statusInfo.link}>
+                          <Badge
+                            variant="secondary"
+                            className={`${statusInfo.color} flex items-center gap-1`}
+                          >
+                            {statusInfo.icon && <statusInfo.icon className="w-3 h-3" />}
+                            {statusInfo.text}
+                          </Badge>
+                        </Link>
+                      )}
+                    </div>
+                  )}
+                </div>
                 {!loading && (
-                  <motion.p
+                  <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
-                    className="text-sm text-muted-foreground mt-1"
+                    className="flex items-center gap-2 mt-1"
                   >
-                    Telegram Bot
-                  </motion.p>
+                    <p className="text-sm text-muted-foreground">Telegram Bot</p>
+                  </motion.div>
                 )}
               </div>
             </motion.div>
@@ -313,10 +390,13 @@ function BotPage() {
                         <YAxis />
                         <Tooltip
                           contentStyle={{
-                            background: 'rgba(255, 255, 255, 0.9)',
-                            border: 'none',
+                            background: 'hsl(var(--background))',
+                            border: '1px solid hsl(var(--border))',
                             borderRadius: '8px',
                             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                            color: 'hsl(var(--foreground))',
+                            fontSize: '14px',
+                            padding: '8px 12px',
                           }}
                         />
                         <Line

@@ -26,6 +26,7 @@ import { useNavigate } from 'react-router-dom';
 import BotLayout from '@/app/bot/layout';
 import { z } from 'zod';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const formatCurrency = (value) => {
   if (!value && value !== 0) return '';
@@ -386,14 +387,27 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="pt-6 border-t">
-                      <Button
-                        onClick={handleSaveDeliverySettings}
-                        disabled={loading}
-                        className="h-11 px-8 flex items-center gap-2"
-                      >
-                        <Save className="w-4 h-4" />
-                        {loading ? 'Сохранение...' : 'Сохранить'}
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div>
+                              <Button
+                                onClick={handleSaveDeliverySettings}
+                                disabled={loading || bot?.tariff?.is_default}
+                                className="h-11 px-8 flex items-center gap-2"
+                              >
+                                <Save className="w-4 h-4" />
+                                {loading ? 'Сохранение...' : 'Сохранить'}
+                              </Button>
+                            </div>
+                          </TooltipTrigger>
+                          {bot?.tariff?.is_default && (
+                            <TooltipContent>
+                              <p>Для настройки доставки необходимо повысить тариф</p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </div>
                 </AccordionContent>

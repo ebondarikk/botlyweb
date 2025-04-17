@@ -27,6 +27,7 @@ import BotLayout from '@/app/bot/layout';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 function ManagerSkeleton() {
   return (
@@ -147,12 +148,40 @@ export default function ManagersList() {
               `Найдено ${count} менеджеров`
             )}
           </div>
-          <Button asChild className="bg-primary hover:bg-primary/90">
-            <Link to="add" className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Добавить менеджера
-            </Link>
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <Button
+                    asChild
+                    className={`transition-all duration-200 ${
+                      bot?.managers_limit !== null && bot?.managers_limit <= 0
+                        ? 'bg-muted cursor-not-allowed opacity-60'
+                        : 'bg-primary hover:bg-primary/90'
+                    }`}
+                    disabled={bot?.managers_limit !== null && bot?.managers_limit <= 0}
+                  >
+                    <Link
+                      to="add"
+                      className="flex items-center gap-2"
+                      disabled={bot?.managers_limit !== null && bot?.managers_limit <= 0}
+                    >
+                      <Plus className="w-4 h-4" />
+                      Добавить менеджера
+                    </Link>
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              {bot?.managers_limit !== null && bot?.managers_limit <= 0 && (
+                <TooltipContent>
+                  <p>
+                    Лимит менеджеров исчерпан. Для добавления новых менеджеров необходимо повысить
+                    тариф.
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         </motion.div>
 
         <div className="space-y-4">
@@ -239,48 +268,25 @@ export default function ManagersList() {
                                         href={`https://t.me/${manager.username}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="flex items-center gap-1.5 text-primary hover:text-primary/80 transition-colors shrink-0"
-                                        onClick={(e) => e.stopPropagation()}
+                                        className="hover:underline"
                                       >
                                         @{manager.username}
-                                        <ExternalLink className="w-3.5 h-3.5" />
                                       </a>
                                     </>
                                   )}
                                 </div>
                               </div>
                             </div>
-
-                            <div className="flex items-center gap-3 ml-auto">
-                              {manager.is_active ? (
-                                <Badge
-                                  variant="outline"
-                                  className="flex items-center gap-1.5 border-primary/20 bg-primary/5 whitespace-nowrap"
-                                >
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
-                                  <span className="text-primary">Активен</span>
-                                </Badge>
-                              ) : (
-                                <Badge
-                                  variant="outline"
-                                  className="flex items-center gap-1.5 border-muted-foreground/20 whitespace-nowrap"
-                                >
-                                  <XCircle className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                                  <span className="text-muted-foreground">Неактивен</span>
-                                </Badge>
-                              )}
+                            <div className="flex items-center gap-2">
                               <Switch
+                                id={`active-${manager.id}`}
                                 checked={manager.is_active}
-                                disabled={manager.id === loadingManagerId}
-                                onCheckedChange={(checked) =>
-                                  handleActiveToggle(manager.id, checked)
+                                onCheckedChange={(isActive) =>
+                                  handleActiveToggle(manager.id, isActive)
                                 }
-                                onClick={(e) => e.stopPropagation()}
-                                id={`active-toggle-${manager.id}`}
+                                disabled={loadingManagerId === manager.id}
                               />
-                              <div className="w-6 h-6 rounded-full flex items-center justify-center text-muted-foreground/40 group-hover:text-primary group-hover:bg-primary/10 transition-colors shrink-0">
-                                <ChevronRight className="w-4 h-4" />
-                              </div>
+                              <ChevronRight className="w-4 h-4 text-muted-foreground" />
                             </div>
                           </div>
                         </CardContent>

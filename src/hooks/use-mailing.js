@@ -80,7 +80,7 @@ export function useMailing(botId, mailingId) {
 
       return true;
     } catch (error) {
-      toast.error('Ошибка при публикации');
+      toast.error(error?.details?.errorMessage);
       return false;
     } finally {
       setPublishing(false);

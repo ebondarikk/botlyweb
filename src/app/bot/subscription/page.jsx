@@ -21,6 +21,7 @@ import {
   Check,
   HelpCircle,
   Ban,
+  AlertTriangle,
 } from 'lucide-react';
 import BotLayout from '@/app/bot/layout';
 import { toast } from 'react-hot-toast';
@@ -45,6 +46,46 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import TariffDialog from './TariffDialog';
+
+function SubscriptionStatusAlert({ status }) {
+  if (status === 'active') return null;
+
+  const getAlertContent = () => {
+    switch (status) {
+      case 'failed_attempt':
+        return {
+          title: 'Неудачная попытка списания',
+          description:
+            'Попытка списания средств не удалась. Система повторит попытку завтра. После 3 неудачных попыток списания подписка будет приостановлена, а магазин заблокирован. Пожалуйста, обновите данные карты или свяжитесь с поддержкой.',
+          className: 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500',
+        };
+      case 'blocked':
+        return {
+          title: 'Подписка приостановлена',
+          description:
+            'После 3 неудачных попыток списания подписка была приостановлена, а магазин заблокирован. Пожалуйста, обновите данные карты или свяжитесь с поддержкой.',
+          className: 'bg-red-500/10 border-red-500/20 text-red-500',
+        };
+      default:
+        return null;
+    }
+  };
+
+  const content = getAlertContent();
+  if (!content) return null;
+
+  return (
+    <div className={`mb-6 p-4 rounded-lg border ${content.className}`}>
+      <div className="flex items-start gap-3">
+        <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+        <div>
+          <h3 className="font-medium">{content.title}</h3>
+          <p className="text-sm mt-1">{content.description}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function SubscriptionPage() {
   const { bot } = useBot();
@@ -81,6 +122,8 @@ export function SubscriptionPage() {
         return 'Ошибка';
     }
   };
+
+  const formatLimit = (limit) => (limit === 0 ? '∞' : limit);
 
   const handlePaymentStatus = () => {
     const status = searchParams.get('status');
@@ -424,6 +467,8 @@ export function SubscriptionPage() {
           animate="visible"
           className="max-w-3xl mx-auto pb-8"
         >
+          {subscription && <SubscriptionStatusAlert status={subscription.status} />}
+
           <Accordion type="single" collapsible defaultValue="tariff" className="space-y-6">
             {/* Email для счетов */}
             <motion.div
@@ -523,7 +568,7 @@ export function SubscriptionPage() {
                         <span className="flex-1 flex justify-between md:justify-start items-baseline">
                           <span>Товаров:</span>
                           <span className="font-medium ml-8 md:ml-4">
-                            {subscription?.tariff?.positions_limit || 0}
+                            {formatLimit(subscription?.tariff?.positions_limit)}
                           </span>
                         </span>
                       </div>
@@ -532,7 +577,7 @@ export function SubscriptionPage() {
                         <span className="flex-1 flex justify-between md:justify-start items-baseline">
                           <span>Категорий:</span>
                           <span className="font-medium ml-8 md:ml-4">
-                            {subscription?.tariff?.categories_limit || 0}
+                            {formatLimit(subscription?.tariff?.categories_limit)}
                           </span>
                         </span>
                       </div>
@@ -543,7 +588,7 @@ export function SubscriptionPage() {
                         <span className="flex-1 flex justify-between md:justify-start items-baseline">
                           <span>Менеджеров:</span>
                           <span className="font-medium ml-8 md:ml-4">
-                            {subscription?.tariff?.managers_limit || 0}
+                            {formatLimit(subscription?.tariff?.managers_limit)}
                           </span>
                         </span>
                       </div>
@@ -552,7 +597,7 @@ export function SubscriptionPage() {
                         <span className="flex-1 flex justify-between md:justify-start items-baseline">
                           <span>Рассылок:</span>
                           <span className="font-medium ml-8 md:ml-4">
-                            {subscription?.tariff?.news_limit || 0}
+                            {formatLimit(subscription?.tariff?.news_limit)}
                           </span>
                         </span>
                       </div>

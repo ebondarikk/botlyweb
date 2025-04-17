@@ -1,4 +1,4 @@
-import { ChevronsUpDown, Plus } from 'lucide-react';
+import { ChevronsUpDown, Plus, AlertTriangle, Ban } from 'lucide-react';
 import React from 'react';
 
 import {
@@ -18,6 +18,26 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+
+const getStatusIndicator = (status) => {
+  switch (status) {
+    case 'active':
+      return { color: 'text-green-500', tooltip: 'Активен' };
+    case 'failed_attempt':
+      return { color: 'text-yellow-500', tooltip: 'Проблема с оплатой', icon: AlertTriangle };
+    case 'blocked':
+      return { color: 'text-red-500', tooltip: 'Заблокирован', icon: Ban };
+    default:
+      return { color: 'text-gray-500', tooltip: 'Неизвестно' };
+  }
+};
+
+function StatusIcon({ status }) {
+  const statusInfo = getStatusIndicator(status);
+  if (!statusInfo.icon) return null;
+  const Icon = statusInfo.icon;
+  return <Icon className={`w-4 h-4 shrink-0 ${statusInfo.color}`} />;
+}
 
 export function BotSwitcher({ bots, activeBot, setActiveBot, loading }) {
   const { isMobile } = useSidebar();
@@ -42,6 +62,11 @@ export function BotSwitcher({ bots, activeBot, setActiveBot, loading }) {
                 <span className="truncate font-semibold">{activeBot?.fullname}</span>
                 <span className="truncate text-xs">@{activeBot?.username}</span>
               </div>
+              {activeBot?.status !== 'active' && (
+                <div className="mr-2">
+                  <StatusIcon status={activeBot?.status} />
+                </div>
+              )}
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
@@ -69,6 +94,7 @@ export function BotSwitcher({ bots, activeBot, setActiveBot, loading }) {
                   <span className="truncate font-semibold">{bot?.fullname}</span>
                   <span className="truncate text-xs">@{bot?.username}</span>
                 </div>
+                {bot?.status !== 'active' && <StatusIcon status={bot?.status} />}
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />

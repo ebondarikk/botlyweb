@@ -104,7 +104,7 @@ export default function TariffDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[1200px] p-0 h-[calc(100vh-64px)] flex flex-col">
+      <DialogContent className="sm:max-w-[1200px] p-0 max-h-[calc(100vh-64px)] flex flex-col">
         <DialogHeader className="p-6 pb-0 flex-shrink-0 flex flex-row items-center">
           {step === 'confirm' && (
             <Button variant="ghost" size="icon" className="mr-4" onClick={handleBack}>

@@ -60,6 +60,7 @@ import ImageUpload from '@/components/image-upload';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useBot } from '@/context/BotContext';
 
 // Кастомное расширение для спойлеров
 const SpoilerExtension = Mark.create({
@@ -473,6 +474,8 @@ export default function MailingFormPage() {
   const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
   const [formChanged, setFormChanged] = useState(false);
 
+  const { bot } = useBot(params.bot_id);
+
   const {
     mailing: existingMailing,
     loading,
@@ -705,12 +708,16 @@ export default function MailingFormPage() {
                                 size="lg"
                                 className="w-full flex items-center gap-2 justify-center"
                                 onClick={() => setIsPublishDialogOpen(true)}
-                                disabled={publishing || formChanged}
+                                disabled={
+                                  publishing ||
+                                  formChanged ||
+                                  (bot?.mailings_limit !== null && bot?.mailings_limit <= 0)
+                                }
                               >
                                 <Send className="w-4 h-4" />
                                 {publishing ? (
                                   <div className="flex items-center gap-2">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
                                     Публикация...
                                   </div>
                                 ) : (
@@ -719,11 +726,18 @@ export default function MailingFormPage() {
                               </Button>
                             </div>
                           </TooltipTrigger>
-                          {formChanged && (
-                            <TooltipContent>
+                          {formChanged ? (
+                            <TooltipContent side="left" sideOffset={20}>
                               <p>Сохраните изменения перед публикацией</p>
                             </TooltipContent>
-                          )}
+                          ) : bot?.mailings_limit !== null && bot?.mailings_limit <= 0 ? (
+                            <TooltipContent side="left" sideOffset={20}>
+                              <p>
+                                Лимит рассылок исчерпан. Для публикации новых рассылок необходимо
+                                повысить тариф.
+                              </p>
+                            </TooltipContent>
+                          ) : null}
                         </Tooltip>
                       </TooltipProvider>
 
@@ -864,8 +878,12 @@ export default function MailingFormPage() {
             <Button
               type="button"
               onClick={onPublish}
-              disabled={publishing || formChanged}
               className="flex items-center gap-2"
+              disabled={
+                publishing ||
+                formChanged ||
+                (bot?.mailings_limit !== null && bot?.mailings_limit <= 0)
+              }
             >
               <Send className="w-4 h-4" />
               Опубликовать

@@ -116,7 +116,7 @@ export default function CategoryFormPage() {
       }
       navigate(-1);
     } catch (error) {
-      toast.error('Ошибка при сохранении');
+      toast.error(error?.details?.errorMessage);
     } finally {
       setSaving(false);
     }

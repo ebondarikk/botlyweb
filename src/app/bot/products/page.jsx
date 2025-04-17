@@ -47,6 +47,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import BotLayout from '@/app/bot/layout';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const sorting = [
   { name: 'По названию', value: 'name', icon: Package },
@@ -192,7 +193,9 @@ export default function ProductList() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex py-4 flex-col md:flex-row justify-between w-full gap-4 items-center"
         >
-          <div className="text-lg font-medium">Найдено {count} товаров</div>
+          <div className="text-lg font-medium">
+            {loading ? <Skeleton className="h-6 w-48 bg-muted/50" /> : `Найдено ${count} товаров`}
+          </div>
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -221,12 +224,43 @@ export default function ProductList() {
               </SelectContent>
             </Select>
           </div>
-          <Button asChild className="bg-primary hover:bg-primary/90">
-            <Link to="add" className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Добавить товар
-            </Link>
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <Button
+                    asChild
+                    className={`transition-all duration-200 ${
+                      bot?.products_limit !== null && bot?.products_limit <= 0
+                        ? 'bg-muted cursor-not-allowed opacity-60'
+                        : 'bg-primary hover:bg-primary/90'
+                    }`}
+                    disabled={bot?.products_limit !== null && bot?.products_limit <= 0}
+                  >
+                    <Link
+                      to={bot?.products_limit !== null && bot?.products_limit <= 0 ? '#' : 'add'}
+                      className="flex items-center gap-2"
+                      onClick={(e) => {
+                        if (bot?.products_limit !== null && bot?.products_limit <= 0) {
+                          e.preventDefault();
+                        }
+                      }}
+                    >
+                      <Plus className="w-4 h-4" />
+                      Добавить товар
+                    </Link>
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              {bot?.products_limit !== null && bot?.products_limit <= 0 && (
+                <TooltipContent>
+                  <p>
+                    Лимит товаров исчерпан. Для добавления новых товаров необходимо повысить тариф.
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         </motion.div>
 
         {/* Скелетоны товаров при загрузке */}

@@ -88,11 +88,11 @@ const items = [
   //   icon: CalendarClock,
   //   disabled: true,
   // },
-  // {
-  //   name: 'Тариф и оплата',
-  //   url: (bot_id) => `/${bot_id}/subscription`,
-  //   icon: CreditCard,
-  // },
+  {
+    name: 'Тариф и оплата',
+    url: (bot_id) => `/${bot_id}/subscription`,
+    icon: CreditCard,
+  },
 ];
 
 export default function BotLayout({ children }) {

@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 import {
   ArrowLeft,
@@ -56,6 +57,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { updateProduct, createProduct, deleteProduct } from '@/lib/api';
 import { useCategories } from '@/hooks/use-categories';
 import BotLayout from '@/app/bot/layout';
+import { useBot } from '@/context/BotContext';
 import { ProductSchema } from './schema';
 
 function getDefaultValues(product) {
@@ -117,6 +119,7 @@ const cardVariants = {
 export default function ProductFormPage() {
   const params = useParams();
   const navigate = useNavigate();
+  const { bot } = useBot();
 
   const { categories } = useCategories(params.bot_id);
 
@@ -168,8 +171,7 @@ export default function ProductFormPage() {
         navigate(`/${params.bot_id}/products/${product.id}`);
       }
     } catch (error) {
-      console.log(error);
-      toast.error('Ошибка обновления');
+      toast.error(error?.details?.errorMessage);
     } finally {
       setSaving(false);
     }
@@ -410,10 +412,30 @@ export default function ProductFormPage() {
                                     <Package className="w-4 h-4 mr-2" />
                                     Простой
                                   </TabsTrigger>
-                                  <TabsTrigger value="grouped" className="w-1/2">
-                                    <Layers className="w-4 h-4 mr-2" />
-                                    Сгруппированный
-                                  </TabsTrigger>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <div className="w-1/2">
+                                          <TabsTrigger
+                                            value="grouped"
+                                            className="w-full"
+                                            disabled={bot?.tariff?.is_default}
+                                          >
+                                            <Layers className="w-4 h-4 mr-2" />
+                                            Сгруппированный
+                                          </TabsTrigger>
+                                        </div>
+                                      </TooltipTrigger>
+                                      {bot?.tariff?.is_default && (
+                                        <TooltipContent>
+                                          <p>
+                                            Для создания сгруппированных товаров необходимо повысить
+                                            тариф
+                                          </p>
+                                        </TooltipContent>
+                                      )}
+                                    </Tooltip>
+                                  </TooltipProvider>
                                 </TabsList>
                               </Tabs>
                             </FormItem>
@@ -449,20 +471,33 @@ export default function ProductFormPage() {
                             name="warehouse"
                             render={({ field }) => (
                               <FormItem>
-                                <div className="flex items-center space-x-3">
-                                  <Switch
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    disabled={form.watch('grouped')}
-                                    id="product-warehouse"
-                                  />
-                                  <FormLabel
-                                    htmlFor="product-warehouse"
-                                    className="text-sm font-medium cursor-pointer"
-                                  >
-                                    Учитывать склад
-                                  </FormLabel>
-                                </div>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div className="flex items-center space-x-3">
+                                        <Switch
+                                          checked={field.value}
+                                          onCheckedChange={field.onChange}
+                                          disabled={
+                                            form.watch('grouped') || bot?.tariff?.is_default
+                                          }
+                                          id="product-warehouse"
+                                        />
+                                        <FormLabel
+                                          htmlFor="product-warehouse"
+                                          className="text-sm font-medium cursor-pointer"
+                                        >
+                                          Учитывать склад
+                                        </FormLabel>
+                                      </div>
+                                    </TooltipTrigger>
+                                    {bot?.tariff?.is_default && (
+                                      <TooltipContent>
+                                        <p>Для управления складом необходимо повысить тариф</p>
+                                      </TooltipContent>
+                                    )}
+                                  </Tooltip>
+                                </TooltipProvider>
                                 <FormMessage />
                               </FormItem>
                             )}

@@ -27,6 +27,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import BotLayout from '@/app/bot/layout';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 function CategorySkeleton() {
   return (
@@ -215,12 +216,48 @@ export default function CategoriesList() {
             {loading ? <Skeleton className="h-6 w-48 bg-muted/50" /> : `Найдено ${count} категорий`}
           </div>
 
-          <Button asChild disabled={isReordering} className="bg-primary hover:bg-primary/90">
-            <Link to="add" className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Добавить категорию
-            </Link>
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <Button
+                    asChild
+                    disabled={
+                      (bot?.categories_limit !== null && bot?.categories_limit <= 0) || isReordering
+                    }
+                    className={`transition-all duration-200 ${
+                      (bot?.categories_limit !== null && bot?.categories_limit <= 0) || isReordering
+                        ? 'bg-muted cursor-not-allowed opacity-60'
+                        : 'bg-primary hover:bg-primary/90'
+                    }`}
+                  >
+                    <Link
+                      to={
+                        bot?.categories_limit !== null && bot?.categories_limit <= 0 ? '#' : 'add'
+                      }
+                      className="flex items-center gap-2"
+                      onClick={(e) => {
+                        if (bot?.categories_limit !== null && bot?.categories_limit <= 0) {
+                          e.preventDefault();
+                        }
+                      }}
+                    >
+                      <Plus className="w-4 h-4" />
+                      Добавить категорию
+                    </Link>
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              {bot?.categories_limit !== null && bot?.categories_limit <= 0 && (
+                <TooltipContent>
+                  <p>
+                    Лимит категорий исчерпан. Для добавления новых категорий необходимо повысить
+                    тариф.
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         </motion.div>
 
         <div className="space-y-4">
