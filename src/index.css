@@ -6,21 +6,21 @@
 
 @layer utilities {
   .bg-background {
-    background: #4D4B55;
+    background: #121212;
   }
 }
 
 @layer components {
   .custom-card {
-    @apply bg-[#353238] border border-white/5 shadow-sm rounded-xl hover:border-[#EA580C]/10 transition-all duration-300;
+    @apply bg-[#222222] border border-white/5 shadow-sm rounded-xl hover:border-[#E5FE44]/10 transition-all duration-300;
   }
 
   .btn-primary {
-    @apply bg-[#EA580C] hover:bg-[#F97316] text-white py-2.5 px-6 rounded-lg transition-all duration-300;
+    @apply bg-[#E5FE44] hover:bg-[#E5FE44]/90 text-black py-2.5 px-6 rounded-lg transition-all duration-300;
   }
 
   .btn-outline {
-    @apply border border-[#EA580C] text-[#EA580C] hover:bg-[#EA580C]/10 py-2.5 px-6 rounded-lg transition-all duration-300;
+    @apply border border-[#E5FE44] text-[#E5FE44] hover:bg-[#E5FE44]/10 hover:text-black py-2.5 px-6 rounded-lg transition-all duration-300;
   }
 
   .btn-secondary {
@@ -32,19 +32,43 @@
   }
 
   .btn-destructive-outline {
-    @apply border border-[#EF4444] text-[#EF4444] hover:bg-[#EF4444]/10 py-2.5 px-6 rounded-lg transition-all duration-300;
+    @apply border border-[#EF4444] text-[#EF4444] hover:bg-[#EF4444]/10 hover:text-[#EF4444] py-2.5 px-6 rounded-lg transition-all duration-300;
+  }
+
+  .bg-sidebar {
+    @apply bg-[#222222] !important;
+  }
+
+  .bg-popover {
+    @apply bg-[#222222] !important;
+  }
+
+  .bg-sidebar-accent {
+    @apply transition-colors duration-300 ease-in-out;
   }
 
   .bg-sidebar-accent:hover {
-    @apply bg-primary/50;
+    @apply bg-primary/20 text-white;
+  }
+
+  .bg-sidebar-accent[data-active="true"] {
+    @apply bg-primary text-black !important;
+  }
+
+  .bg-sidebar-accent[data-active="true"] * {
+    @apply text-black !important;
   }
 
   .sidebar-menu-button {
-    @apply hover:bg-[#EA580C]/10 data-[active]:bg-[#EA580C]/10 data-[active]:border-l-[3px] data-[active]:border-[#EA580C] data-[active]:text-[#F97316];
+    @apply hover:bg-[#E5FE44]/10 data-[active]:bg-[#E5FE44]/10 data-[active]:border-l-[3px] data-[active]:border-[#E5FE44] data-[active]:text-black;
+  }
+
+  .sidebar-menu-button[data-active="true"] * {
+    @apply text-black;
   }
 
   .sidebar-menu-icon {
-    @apply text-[#9CA3AF] group-hover:text-[#F97316] group-data-[active]:text-[#F97316];
+    @apply text-[#9CA3AF] group-hover:text-black group-data-[active]:text-black;
   }
 
   .sidebar-dropdown {
@@ -76,15 +100,63 @@
   }
 
   .form-switch[data-state="checked"] {
-    @apply bg-[#EA580C] border-[#EA580C];
+    @apply bg-[#E5FE44] border-[#E5FE44] text-black;
   }
 
   .form-checkbox {
-    @apply bg-[#2A2C31] border-white/10 text-[#EA580C];
+    @apply bg-[#2A2C31] border-white/10 text-[#E5FE44] data-[state=checked]:text-black;
   }
 
   .form-radio {
-    @apply bg-[#2A2C31] border-white/10 text-[#EA580C];
+    @apply bg-[#2A2C31] border-white/10 text-[#E5FE44] data-[state=checked]:text-black;
+  }
+
+  .select-trigger[data-state="open"] {
+    @apply bg-[#E5FE44] text-black;
+  }
+
+  .select-trigger[data-state="open"] * {
+    @apply text-black;
+  }
+
+  .select-content {
+    @apply bg-[#222222];
+  }
+
+  .select-item[data-highlighted] {
+    @apply bg-[#E5FE44] text-black;
+  }
+
+  .select-item[data-highlighted] * {
+    @apply text-black;
+  }
+
+  .select-item[data-highlighted] span {
+    @apply text-black;
+  }
+
+  .tabs-trigger[data-state="active"] {
+    @apply bg-[#E5FE44] text-black;
+  }
+
+  .tabs-trigger[data-state="active"] * {
+    @apply text-black;
+  }
+
+  .tabs-trigger[data-state="active"] span {
+    @apply text-black;
+  }
+
+  .tabs-trigger[data-state="active"]:hover {
+    @apply bg-[#E5FE44]/90 text-black;
+  }
+
+  .tabs-trigger[data-state="active"]:hover * {
+    @apply text-black;
+  }
+
+  .tabs-trigger[data-state="active"]:hover span {
+    @apply text-black;
   }
 }
 
@@ -94,33 +166,33 @@
     --foreground: 0 0% 98%;
     --popover: 260 5% 31%;
     --popover-foreground: 0 0% 98%;
-    --primary: 24 92% 48%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 72 99% 65%;
+    --primary-foreground: 0 0% 0%;
     --secondary: 260 5% 20%;
     --secondary-foreground: 0 0% 98%;
     --muted: 260 5% 20%;
     --muted-foreground: 260 5% 65%;
-    --accent: 24 92% 48%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 72 99% 65%;
+    --accent-foreground: 0 0% 0%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     --border: 260 5% 20%;
     --input: 260 5% 20%;
-    --ring: 24 92% 48%;
-    --chart-1: 24 92% 48%;
-    --chart-2: 20 90% 50%;
-    --chart-3: 28 90% 52%;
-    --chart-4: 32 85% 55%;
-    --chart-5: 16 85% 50%;
+    --ring: 72 99% 65%;
+    --chart-1: 72 99% 65%;
+    --chart-2: 72 99% 65%;
+    --chart-3: 72 99% 65%;
+    --chart-4: 72 99% 65%;
+    --chart-5: 72 99% 65%;
     --radius: 1rem;
     --sidebar-background: 260 5% 31%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 24 92% 48%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 24 92% 48%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 24 92% 48%;
-    --sidebar-ring: 24 92% 48%;
+    --sidebar-primary: 72 99% 65%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 72 99% 65%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 72 99% 65%;
+    --sidebar-ring: 72 99% 65%;
   }
 
   .dark {
@@ -128,32 +200,32 @@
     --foreground: 0 0% 98%;
     --popover: 260 5% 31%;
     --popover-foreground: 0 0% 98%;
-    --primary: 24 92% 48%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 72 99% 65%;
+    --primary-foreground: 0 0% 0%;
     --secondary: 260 5% 20%;
     --secondary-foreground: 0 0% 98%;
     --muted: 260 5% 20%;
     --muted-foreground: 260 5% 65%;
-    --accent: 24 92% 48%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 72 99% 65%;
+    --accent-foreground: 0 0% 0%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     --border: 260 5% 20%;
     --input: 260 5% 20%;
-    --ring: 24 92% 48%;
-    --chart-1: 24 92% 48%;
-    --chart-2: 20 90% 50%;
-    --chart-3: 28 90% 52%;
-    --chart-4: 32 85% 55%;
-    --chart-5: 16 85% 50%;
+    --ring: 72 99% 65%;
+    --chart-1: 72 99% 65%;
+    --chart-2: 72 99% 65%;
+    --chart-3: 72 99% 65%;
+    --chart-4: 72 99% 65%;
+    --chart-5: 72 99% 65%;
     --sidebar-background: 260 5% 31%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 24 92% 48%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 24 92% 48%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 24 92% 48%;
-    --sidebar-ring: 24 92% 48%;
+    --sidebar-primary: 72 99% 65%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 72 99% 65%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 72 99% 65%;
+    --sidebar-ring: 72 99% 65%;
   }
 }
 
@@ -163,7 +235,7 @@
   }
 
   body {
-    @apply bg-[#474550] text-foreground min-h-screen;
+    @apply bg-background text-foreground min-h-screen;
     font-family: 'Inter', sans-serif;
   }
 
@@ -185,13 +257,13 @@
     font-weight: 600;
   }
 
-  body,
+  /* body,
   p,
   span,
   .text {
     @apply text-[#E5E7EB] text-[15px] leading-relaxed;
     font-weight: 400;
-  }
+  } */
 }
 
 .bg-gradient-to-br {

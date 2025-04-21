@@ -11,7 +11,7 @@ function Header({ activeTab }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
       className={cn(
-        'sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/95 px-6',
+        'sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-sidebar px-6',
         'backdrop-blur supports-[backdrop-filter]:bg-background/60',
       )}
     >

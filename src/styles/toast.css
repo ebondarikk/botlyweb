@@ -1,0 +1,39 @@
+.toast {
+  @apply bg-[#222222]/90 backdrop-blur-md border border-[#E5FE44]/20 shadow-lg rounded-xl;
+}
+
+.toast-success {
+  @apply bg-[#E5FE44] text-black border-none;
+}
+
+.toast-error {
+  @apply bg-[#EF4444] text-white border-none;
+}
+
+.toast-icon {
+  @apply w-5 h-5;
+}
+
+.toast-message {
+  @apply text-sm font-medium text-white/90;
+}
+
+.toast-success .toast-message {
+  @apply text-black;
+}
+
+.toast-error .toast-message {
+  @apply text-white;
+}
+
+.toast-close-button {
+  @apply text-white/50 hover:text-white transition-colors;
+}
+
+.toast-success .toast-close-button {
+  @apply text-black/50 hover:text-black;
+}
+
+.toast-error .toast-close-button {
+  @apply text-white/70 hover:text-white;
+} 

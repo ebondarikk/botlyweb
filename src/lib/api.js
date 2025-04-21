@@ -1,7 +1,7 @@
 import { toast } from 'react-hot-toast';
 
-const BASE_URL = import.meta.env.VITE_API_URL;
-// const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
+// const BASE_URL = import.meta.env.VITE_API_URL;
+const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
 
 /**
  * Функция-обёртка для API-запросов.
@@ -542,3 +542,42 @@ export async function cancelSubscription(botId) {
     },
   });
 }
+
+export const getPaymentMethods = async (botId) => {
+  return apiRequest(`/bots/${botId}/settings/payment-methods/`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const updatePaymentMethod = async (botId, methodId, data) => {
+  return apiRequest(`/bots/${botId}/settings/payment-methods/${methodId}/`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+};
+
+export const createPaymentMethod = async (botId, data) => {
+  return apiRequest(`/bots/${botId}/settings/payment-methods/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+};
+
+export const updatePaymentMethods = async (botId, methods) => {
+  return apiRequest(`/bots/${botId}/settings/payment-methods/`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ payment_methods: methods }),
+  });
+};

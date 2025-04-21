@@ -83,21 +83,25 @@ export function useProducts(
         groupedFilter,
       );
 
-      setProducts(page === initialPage ? response.products : [...products, ...response.products]);
+      if (page === initialPage) {
+        setProducts(response.products);
+      } else {
+        setProducts((prevProducts) => [...prevProducts, ...response.products]);
+      }
       setCount(response.count);
     } catch (err) {
       toast.error(`Ошибка загрузки вариантов: ${err?.message}` || err);
     } finally {
       setLoading(false);
     }
-  }, [botId, page, limit, orderBy, desc, search, categoriesFilter, groupedFilter]);
+  }, [botId, page, limit, orderBy, desc, search, categoriesFilter, groupedFilter, initialPage]);
 
   // Логика загрузки. Если один из параметров (page, limit, orderBy, desc, search) меняется —
   // просто делаем запрос.
   useEffect(() => {
     if (!botId) return;
     loadProducts();
-  }, [botId, page, limit, orderBy, desc, search, loadProducts, categoriesFilter, groupedFilter]);
+  }, [botId, page, limit, orderBy, desc, search, categoriesFilter, groupedFilter]);
 
   const nextPage = () => {
     if (page < pagesCount) {

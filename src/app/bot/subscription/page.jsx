@@ -626,10 +626,11 @@ export function SubscriptionPage() {
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button
+                            type="button"
                             variant="outline"
-                            className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
+                            className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive h-11 flex items-center gap-2"
                           >
-                            <Ban className="w-4 h-4 mr-2" />
+                            <Ban className="w-4 h-4" />
                             Отменить подписку
                           </Button>
                         </DialogTrigger>

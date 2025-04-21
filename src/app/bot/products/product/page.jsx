@@ -148,9 +148,19 @@ export default function ProductFormPage() {
 
   useEffect(() => {
     if (existingProduct) {
-      form.reset(getDefaultValues(existingProduct));
+      const productValues = getDefaultValues(existingProduct);
+      // Проверяем, существует ли категория в списке категорий
+      if (productValues.category && categories.length > 0) {
+        const categoryExists = categories.some(
+          (cat) => (cat.value ? cat.value : cat.name) === productValues.category,
+        );
+        if (!categoryExists) {
+          productValues.category = '';
+        }
+      }
+      form.reset(productValues);
     }
-  }, [existingProduct, form]);
+  }, [existingProduct, form, categories]);
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -408,7 +418,10 @@ export default function ProductFormPage() {
                                 onValueChange={handleTabsChange}
                               >
                                 <TabsList className="w-full">
-                                  <TabsTrigger value="simple" className="w-1/2">
+                                  <TabsTrigger
+                                    value="simple"
+                                    className="w-1/2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                                  >
                                     <Package className="w-4 h-4 mr-2" />
                                     Простой
                                   </TabsTrigger>
@@ -418,8 +431,8 @@ export default function ProductFormPage() {
                                         <div className="w-1/2">
                                           <TabsTrigger
                                             value="grouped"
-                                            className="w-full"
-                                            disabled={bot?.tariff?.is_default}
+                                            className="w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                                            disabled={!bot?.can_create_grouped}
                                           >
                                             <Layers className="w-4 h-4 mr-2" />
                                             Сгруппированный
@@ -479,7 +492,7 @@ export default function ProductFormPage() {
                                           checked={field.value}
                                           onCheckedChange={field.onChange}
                                           disabled={
-                                            form.watch('grouped') || bot?.tariff?.is_default
+                                            form.watch('grouped') || !bot?.can_manage_warehouse
                                           }
                                           id="product-warehouse"
                                         />
@@ -491,7 +504,7 @@ export default function ProductFormPage() {
                                         </FormLabel>
                                       </div>
                                     </TooltipTrigger>
-                                    {bot?.tariff?.is_default && (
+                                    {!form.watch('grouped') && !bot?.can_manage_warehouse && (
                                       <TooltipContent>
                                         <p>Для управления складом необходимо повысить тариф</p>
                                       </TooltipContent>
@@ -645,19 +658,34 @@ export default function ProductFormPage() {
                                           name={`subproducts.${idx}.warehouse`}
                                           render={({ field }) => (
                                             <FormItem>
-                                              <div className="flex items-center space-x-3">
-                                                <Switch
-                                                  checked={field.value}
-                                                  onCheckedChange={field.onChange}
-                                                  id={`sub-warehouse-${idx}`}
-                                                />
-                                                <FormLabel
-                                                  htmlFor={`sub-warehouse-${idx}`}
-                                                  className="text-sm font-medium cursor-pointer"
-                                                >
-                                                  Учитывать склад
-                                                </FormLabel>
-                                              </div>
+                                              <TooltipProvider>
+                                                <Tooltip>
+                                                  <TooltipTrigger asChild>
+                                                    <div className="flex items-center space-x-3">
+                                                      <Switch
+                                                        checked={field.value}
+                                                        onCheckedChange={field.onChange}
+                                                        id={`sub-warehouse-${idx}`}
+                                                        disabled={!bot?.can_manage_warehouse}
+                                                      />
+                                                      <FormLabel
+                                                        htmlFor={`sub-warehouse-${idx}`}
+                                                        className="text-sm font-medium cursor-pointer"
+                                                      >
+                                                        Учитывать склад
+                                                      </FormLabel>
+                                                    </div>
+                                                  </TooltipTrigger>
+                                                  {!bot?.can_manage_warehouse && (
+                                                    <TooltipContent>
+                                                      <p>
+                                                        Для управления складом необходимо повысить
+                                                        тариф
+                                                      </p>
+                                                    </TooltipContent>
+                                                  )}
+                                                </Tooltip>
+                                              </TooltipProvider>
                                               <FormMessage />
                                             </FormItem>
                                           )}
@@ -754,7 +782,7 @@ export default function ProductFormPage() {
                       <Button
                         type="button"
                         variant="outline"
-                        className="border-destructive text-destructive hover:bg-destructive/10 h-11 flex items-center gap-2"
+                        className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive h-11 flex items-center gap-2"
                       >
                         <Trash2 className="w-4 h-4" />
                         Удалить товар

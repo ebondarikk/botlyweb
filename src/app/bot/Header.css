@@ -4,9 +4,6 @@
   padding: 12px 24px;
   border-bottom: 1px solid hsl(var(--border));
   z-index: 10;
-  background: linear-gradient(135deg,
-      hsl(var(--background)/.95) 0%,
-      hsl(var(--card)/0.92) 100%);
   backdrop-filter: blur(12px) brightness(0.85);
   box-shadow:
     0 4px 6px -1px rgb(0 0 0 / 0.2),

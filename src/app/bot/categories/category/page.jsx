@@ -280,7 +280,7 @@ export default function CategoryFormPage() {
                         <Button
                           type="button"
                           variant="outline"
-                          className="border-destructive text-destructive hover:bg-destructive/10 h-11 flex items-center gap-2"
+                          className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive h-11 flex items-center gap-2"
                         >
                           <Trash2 className="w-4 h-4" />
                           Удалить категорию

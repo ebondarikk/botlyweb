@@ -35,8 +35,8 @@ export default function LoginPage() {
     } else {
       const script = document.createElement('script');
       script.src = 'https://telegram.org/js/telegram-widget.js?7';
-      script.setAttribute('data-telegram-login', import.meta.env.VITE_TELEGRAM_BOT_NAME);
-      // script.setAttribute('data-telegram-login', 'botly_bbot');
+      // script.setAttribute('data-telegram-login', import.meta.env.VITE_TELEGRAM_BOT_NAME);
+      script.setAttribute('data-telegram-login', 'botly_bbot');
       script.setAttribute('data-size', 'large');
       script.setAttribute('data-userpic', 'true');
       script.setAttribute('data-request-access', 'write');
@@ -59,10 +59,10 @@ export default function LoginPage() {
   }, [navigate]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4">
+    <div className="flex items-center justify-center min-h-screen px-4 bg-background">
       <Card className="w-full max-w-xl custom-card">
         <CardHeader className="text-center">
-          <h1 className="text-3xl font-semibold mb-2 drop-shadow-sm">Вход в Botly</h1>
+          <h1 className="text-3xl font-semibold mb-2 drop-shadow-sm bg-sidebar">Вход в Botly</h1>
           <p className="text-muted-foreground drop-shadow-sm">
             Ваш Telegram-магазин — легко и быстро
           </p>

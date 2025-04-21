@@ -190,7 +190,7 @@ export default function ProductList() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: 0.1, delay: 0.3 }}
           className="flex py-4 flex-col md:flex-row justify-between w-full gap-4 items-center"
         >
           <div className="text-lg font-medium">
@@ -273,11 +273,11 @@ export default function ProductList() {
           >
             {Array.from({ length: 12 }).map((_, index) => (
               <motion.div key={index} variants={itemVariants}>
-                <Card className="flex flex-col h-[500px] custom-card">
-                  <div className="relative h-48">
+                <Card className="flex flex-col h-[460px] custom-card">
+                  <div className="relative h-56">
                     <Skeleton className="absolute inset-0 rounded-t-lg bg-muted/50" />
                   </div>
-                  <CardContent className="flex flex-col flex-grow mt-4 space-y-2.5 px-4">
+                  <CardContent className="flex flex-col flex-grow mt-2 space-y-1.5 px-4">
                     <Skeleton className="h-7 w-3/4 bg-muted/50" />
                     <Skeleton className="h-16 w-full bg-muted/50" />
                     <div className="space-y-2 mt-2">
@@ -286,7 +286,7 @@ export default function ProductList() {
                       <Skeleton className="h-5 w-1/2 bg-muted/50" />
                     </div>
                   </CardContent>
-                  <CardFooter className="mt-auto pt-4 px-4 flex justify-between items-center border-t border-border/10">
+                  <CardFooter className="mt-auto pt-2 px-4 flex justify-between items-center border-t border-border/10">
                     <Skeleton className="h-6 w-20 bg-muted/50" />
                     <Skeleton className="h-7 w-24 bg-muted/50" />
                   </CardFooter>
@@ -302,7 +302,7 @@ export default function ProductList() {
           next={nextPage}
           hasMore={products.length < count}
           className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 p-2 px-0 md:p-4"
-          scrollThreshold={0.8}
+          scrollThreshold={0.6}
           loader={
             <div className="col-span-full flex justify-center py-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -313,10 +313,10 @@ export default function ProductList() {
             {products.map((product, index) => (
               <motion.div
                 key={product.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -5 }}
+                transition={{ duration: 0.2, delay: index * 0.05 }}
+                whileHover={{ y: -3 }}
               >
                 <Link to={`/${bot.id}/products/${product.id}`}>
                   <Card
@@ -326,7 +326,7 @@ export default function ProductList() {
                       ${product.frozen ? 'opacity-80 hover:opacity-100' : ''}`}
                   >
                     {/* Метки */}
-                    <div className="absolute z-10 top-3 right-3 flex flex-col gap-1.5">
+                    <div className="absolute z-10 top-2 right-2 flex flex-col gap-1">
                       <AnimatePresence>
                         {product.frozen && (
                           <motion.div
@@ -355,7 +355,7 @@ export default function ProductList() {
 
                     {/* Изображение */}
                     <motion.div
-                      className="relative w-full h-48 overflow-hidden group"
+                      className="relative w-full h-[200px] overflow-hidden group flex-shrink-0"
                       whileHover="hover"
                     >
                       <motion.div
@@ -388,9 +388,9 @@ export default function ProductList() {
                     </motion.div>
 
                     {/* Контент */}
-                    <CardContent className="flex flex-col flex-grow mt-4 space-y-4 px-5">
+                    <CardContent className="flex flex-col flex-grow space-y-1.5 px-4">
                       <div>
-                        <CardTitle className="text-lg font-semibold line-clamp-2 leading-tight text-foreground/90 group-hover:text-primary transition-colors">
+                        <CardTitle className="text-lg font-semibold line-clamp-2 py-4 leading-tight text-foreground/90 group-hover:text-primary transition-colors">
                           {product.name}
                         </CardTitle>
                         <CardDescription className="text-sm text-muted-foreground/80 line-clamp-3 mt-2">
@@ -429,7 +429,7 @@ export default function ProductList() {
                     </CardContent>
 
                     {/* Футер */}
-                    <CardFooter className="mt-auto pt-4 px-5 flex justify-between items-center border-t border-border/10">
+                    <CardFooter className="flex-shrink-0 pt-2 px-4 flex justify-between items-center border-t border-border/10">
                       <div className="flex items-center gap-3">
                         <Label
                           htmlFor={`${product.id}_frozen`}
@@ -448,13 +448,15 @@ export default function ProductList() {
                           id={`${product.id}_frozen`}
                           checked={product.frozen}
                           disabled={loadingProductId === product.id}
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.stopPropagation();
                             e.preventDefault();
+                            await updateProduct(product.id, { frozen: !product.frozen });
                           }}
-                          onCheckedChange={async (checked) => {
-                            await updateProduct(product.id, { frozen: checked });
-                          }}
+                          // onCheckedChange={async (checked) => {
+                          //   console.log(checked);
+                          //   await updateProduct(product.id, { frozen: checked });
+                          // }}
                         />
                       </div>
                       <motion.div
