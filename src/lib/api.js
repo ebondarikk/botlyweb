@@ -544,7 +544,7 @@ export async function cancelSubscription(botId) {
 }
 
 export const getPaymentMethods = async (botId) => {
-  return apiRequest(`/bots/${botId}/settings/payment-methods/`, {
+  return apiRequest(`/bots/${botId}/settings/payment-methods`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -573,7 +573,7 @@ export const createPaymentMethod = async (botId, data) => {
 };
 
 export const updatePaymentMethods = async (botId, methods) => {
-  return apiRequest(`/bots/${botId}/settings/payment-methods/`, {
+  return apiRequest(`/bots/${botId}/settings/payment-methods`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
