@@ -40,7 +40,7 @@ export default function ImageUpload({ preview, onChange, alt = 'Preview', classN
     <div className={`flex items-center space-x-4 ${className}`}>
       {/* Превью изображения */}
       {previewUrl ? (
-        <div className="relative w-64 h-64 overflow-hidden rounded-md bg-gray-100 flex items-center justify-center">
+        <div className="relative w-64 h-64 overflow-hidden rounded-md flex items-center justify-center">
           <img src={previewUrl} alt={alt} className="object-cover w-full h-full" />
         </div>
       ) : (

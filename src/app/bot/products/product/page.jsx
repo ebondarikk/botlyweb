@@ -91,6 +91,7 @@ function getDefaultValues(product) {
       product.subproducts?.map((sub) => ({
         name: sub.name || '',
         frozen: sub.frozen || false,
+        price: sub.price || product.price || '0.00',
         warehouse: sub.warehouse || false,
         warehouse_count: sub.warehouse_count || 0,
       })) || [],
@@ -239,7 +240,7 @@ export default function ProductFormPage() {
             variant="ghost"
             size="icon"
             className="rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(`/${params.bot_id}/products`)}
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
@@ -623,6 +624,26 @@ export default function ProductFormPage() {
                                             </FormLabel>
                                             <FormControl>
                                               <Input className="h-11" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+
+                                      <FormField
+                                        control={form.control}
+                                        name={`subproducts.${idx}.price`}
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel>Цена</FormLabel>
+                                            <FormControl>
+                                              <Input
+                                                type="number"
+                                                step="0.01"
+                                                min="0.01"
+                                                className="h-11"
+                                                {...field}
+                                              />
                                             </FormControl>
                                             <FormMessage />
                                           </FormItem>

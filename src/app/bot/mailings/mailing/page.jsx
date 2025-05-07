@@ -575,7 +575,7 @@ export default function MailingFormPage() {
             variant="ghost"
             size="icon"
             className="rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(`/${params.bot_id}/mailings`)}
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
