@@ -172,6 +172,7 @@ export default function ProductFormPage() {
     setSaving(true);
     try {
       if (existingProduct) {
+        console.log(data);
         const updatedProduct = await updateProduct(params.bot_id, existingProduct.id, {
           ...data,
         });

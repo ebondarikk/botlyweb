@@ -4,6 +4,7 @@ export const SubproductSchema = z
   .object({
     name: z.string().min(1, 'Название должно содержать минимум 1 символ'),
     warehouse: z.boolean(),
+    frozen: z.boolean(),
     price: z.preprocess(
       (val) => {
         // Если передана пустая строка, превращаем в 0
