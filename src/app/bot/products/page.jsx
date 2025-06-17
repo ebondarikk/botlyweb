@@ -55,6 +55,21 @@ const sorting = [
   { name: 'По кол-ву на складе', value: 'warehouse_count', icon: Package },
 ];
 
+function getContrastTextColor(bgColor) {
+  if (!bgColor) return '#000';
+  let c = bgColor.replace('#', '');
+  if (c.length === 3)
+    c = c
+      .split('')
+      .map((x) => x + x)
+      .join('');
+  const r = parseInt(c.substr(0, 2), 16);
+  const g = parseInt(c.substr(2, 2), 16);
+  const b = parseInt(c.substr(4, 2), 16);
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 150 ? '#000' : '#fff';
+}
+
 export default function ProductList() {
   const { bot } = useBot();
   const {
@@ -393,6 +408,28 @@ export default function ProductList() {
                         <CardTitle className="text-lg font-semibold line-clamp-2 py-4 leading-tight text-foreground/90 group-hover:text-primary transition-colors">
                           {product.name}
                         </CardTitle>
+                        {/* Метки товара сразу под названием */}
+                        {Array.isArray(product.tags) && product.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                            {product.tags.map((tag) => (
+                              <span
+                                key={tag.id}
+                                className="px-2 py-1 rounded-md text-xs font-medium shadow-sm border border-border"
+                                style={{
+                                  background: tag.color,
+                                  color: getContrastTextColor(tag.color),
+                                  maxWidth: '120px',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                                title={tag.name}
+                              >
+                                {tag.name}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         <CardDescription className="text-sm text-muted-foreground/80 line-clamp-3 mt-2">
                           {product.description || 'Описание отсутствует'}
                         </CardDescription>

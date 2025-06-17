@@ -1,7 +1,7 @@
 import { toast } from 'react-hot-toast';
 
-// const BASE_URL = import.meta.env.VITE_API_URL;
-const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
+const BASE_URL = import.meta.env.VITE_API_URL;
+// const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
 
 /**
  * Функция-обёртка для API-запросов.
@@ -312,6 +312,53 @@ export async function publishMailing(botId, mailingId) {
   });
 }
 
+export async function getTags(botId) {
+  return apiRequest(`/bots/${botId}/tags/`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+export async function createTag(botId, tag) {
+  return apiRequest(`/bots/${botId}/tags/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(tag),
+  });
+}
+
+export async function updateTag(botId, tagId, tag) {
+  return apiRequest(`/bots/${botId}/tags/${tagId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(tag),
+  });
+}
+
+export async function deleteTag(botId, tagId) {
+  return apiRequest(`/bots/${botId}/tags/${tagId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+export async function loadTag(botId, tagId) {
+  return apiRequest(`/bots/${botId}/tags/${tagId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
 export async function getCategories(botId, page, limit, order_by, search) {
   const queryParams = new URLSearchParams({
     order_by,
@@ -581,3 +628,13 @@ export const updatePaymentMethods = async (botId, methods) => {
     body: JSON.stringify({ payment_methods: methods }),
   });
 };
+
+export async function updateTags(botId, data) {
+  return apiRequest(`/bots/${botId}/tags/`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ tags: data }),
+  });
+}

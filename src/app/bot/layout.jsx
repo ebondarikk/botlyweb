@@ -36,6 +36,7 @@ import {
   BadgeCheck,
   CreditCard,
   LogOut,
+  Tag,
   BriefcaseBusiness,
 } from 'lucide-react';
 import { UserProvider, useUser } from '@/context/UserContext';
@@ -60,6 +61,11 @@ const items = [
     name: 'Категории',
     url: (bot_id) => `/${bot_id}/categories`,
     icon: Folder,
+  },
+  {
+    name: 'Ярлыки',
+    url: (bot_id) => `/${bot_id}/tags`,
+    icon: Tag,
   },
   {
     name: 'Рассылки',

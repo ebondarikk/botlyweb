@@ -19,6 +19,8 @@ import CreateBot from './app/create-bot/page';
 import SettingsPage from './app/bot/settings/page';
 import BillingPage from './app/billing/page';
 import SubscriptionPage from './app/bot/subscription/page';
+import TagsList from './app/bot/tags/page';
+import TagFormPage from './app/bot/tags/tag/page';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -162,6 +164,30 @@ function App() {
             element={
               <BotProvider>
                 <SubscriptionPage />
+              </BotProvider>
+            }
+          />
+          <Route
+            path="/:bot_id/tags"
+            element={
+              <BotProvider>
+                <TagsList />
+              </BotProvider>
+            }
+          />
+          <Route
+            path="/:bot_id/tags/:tag_id"
+            element={
+              <BotProvider>
+                <TagFormPage />
+              </BotProvider>
+            }
+          />
+          <Route
+            path="/:bot_id/tags/add"
+            element={
+              <BotProvider>
+                <TagFormPage />
               </BotProvider>
             }
           />

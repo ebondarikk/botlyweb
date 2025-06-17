@@ -35,8 +35,8 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
 import {
+  Info,
   ArrowLeft,
   ImageIcon,
   Package,
@@ -58,7 +58,88 @@ import { updateProduct, createProduct, deleteProduct } from '@/lib/api';
 import { useCategories } from '@/hooks/use-categories';
 import BotLayout from '@/app/bot/layout';
 import { useBot } from '@/context/BotContext';
+import { useTags } from '@/hooks/use-tags';
+import {
+  DndContext,
+  closestCenter,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  KeyboardSensor,
+  DragOverlay,
+} from '@dnd-kit/core';
+import { SortableContext, rectSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { ProductSchema } from './schema';
+
+function getContrastTextColor(bgColor) {
+  // Определяет, использовать ли белый или черный текст на фоне bgColor
+  if (!bgColor) return '#000';
+  let c = bgColor.replace('#', '');
+  if (c.length === 3)
+    c = c
+      .split('')
+      .map((x) => x + x)
+      .join('');
+  const r = parseInt(c.substr(0, 2), 16);
+  const g = parseInt(c.substr(2, 2), 16);
+  const b = parseInt(c.substr(4, 2), 16);
+  // Яркость по формуле WCAG
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 150 ? '#000' : '#fff';
+}
+
+function TagChip({ tag, onRemove, dragOverlay }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: tag.id,
+  });
+  const textColor = getContrastTextColor(tag.color);
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging || dragOverlay ? 999 : undefined,
+    opacity: isDragging || dragOverlay ? 0.85 : 1,
+    cursor: dragOverlay ? 'grabbing' : 'grab',
+    minWidth: '120px',
+    height: '2.25rem',
+    boxShadow: isDragging || dragOverlay ? '0 4px 16px 0 rgba(0,0,0,0.10)' : undefined,
+    background: tag.color,
+    pointerEvents: dragOverlay ? 'none' : undefined,
+    paddingLeft: '12px',
+    paddingRight: '12px',
+    paddingTop: '4px',
+    paddingBottom: '4px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    borderRadius: '9999px',
+    border: '1px solid var(--border)',
+    color: textColor,
+    fontWeight: 500,
+    justifyContent: 'space-between',
+  };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="shadow-sm transition select-none"
+      {...attributes}
+      {...listeners}
+    >
+      <span className="font-medium text-sm flex-1 truncate" style={{ color: textColor }}>
+        {tag.name}
+      </span>
+      <button
+        type="button"
+        className="ml-2 text-lg"
+        style={{ color: textColor }}
+        onClick={onRemove}
+      >
+        ×
+      </button>
+    </div>
+  );
+}
 
 function getDefaultValues(product) {
   if (!product) {
@@ -123,6 +204,12 @@ export default function ProductFormPage() {
   const { bot } = useBot();
 
   const { categories } = useCategories(params.bot_id);
+  const [tagsLoaded, setTagsLoaded] = useState(false);
+  const {
+    tags: allTags,
+    loading: tagsLoading,
+    refetch: refetchTags,
+  } = useTags(tagsLoaded ? params.bot_id : null);
 
   useEffect(() => {
     categories.unshift({ id: 'null', name: '-', value: '' });
@@ -136,6 +223,8 @@ export default function ProductFormPage() {
 
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [activeDragTag, setActiveDragTag] = useState(null);
 
   const defaultValues = existingProduct
     ? getDefaultValues(existingProduct)
@@ -163,23 +252,69 @@ export default function ProductFormPage() {
     }
   }, [existingProduct, form, categories]);
 
+  useEffect(() => {
+    if (existingProduct && Array.isArray(existingProduct.tags)) {
+      // Если tags — массив объектов (с id, name, color), используем их напрямую
+      if (existingProduct.tags.length > 0 && typeof existingProduct.tags[0] === 'object') {
+        setSelectedTags(existingProduct.tags);
+      } else {
+        // Если tags — массив id
+        setSelectedTags(
+          existingProduct.tags.map((id) => allTags.find((t) => t.id === id)).filter(Boolean),
+        );
+      }
+    }
+  }, [existingProduct, allTags]);
+
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'subproducts',
   });
 
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor),
+  );
+
+  // Drag and drop сортировка выбранных меток
+  const handleTagDragStart = (event) => {
+    const { active } = event;
+    const tag = selectedTags.find((t) => t.id === active.id);
+    setActiveDragTag(tag || null);
+  };
+  const handleTagDragEnd = (event) => {
+    const { active, over } = event;
+    setActiveDragTag(null);
+    if (!over || active.id === over.id) return;
+    const oldIndex = selectedTags.findIndex((t) => t.id === active.id);
+    const newIndex = selectedTags.findIndex((t) => t.id === over.id);
+    setSelectedTags(arrayMove(selectedTags, oldIndex, newIndex));
+  };
+  const handleTagDragCancel = () => setActiveDragTag(null);
+
+  // Добавление/удаление метки
+  const handleTagToggle = (tag) => {
+    if (selectedTags.some((t) => t.id === tag.id)) {
+      setSelectedTags(selectedTags.filter((t) => t.id !== tag.id));
+    } else if (selectedTags.length < 5) {
+      setSelectedTags([...selectedTags, tag]);
+    }
+  };
+
   const onSubmit = async (data) => {
     setSaving(true);
     try {
+      const tags = selectedTags.map((t) => t.id);
       if (existingProduct) {
-        console.log(data);
         const updatedProduct = await updateProduct(params.bot_id, existingProduct.id, {
           ...data,
+          tags,
         });
         setExistingProduct(updatedProduct);
         toast.success('Данные обновлены');
       } else {
-        const product = await createProduct(params.bot_id, { ...data });
+        const product = await createProduct(params.bot_id, { ...data, tags });
         navigate(`/${params.bot_id}/products/${product.id}`);
       }
     } catch (error) {
@@ -220,6 +355,14 @@ export default function ProductFormPage() {
         warehouse: false,
         warehouse_count: 0,
       });
+    }
+  };
+
+  // Для select
+  const handleSelectOpen = () => {
+    if (!tagsLoaded) {
+      setTagsLoaded(true);
+      if (typeof refetchTags === 'function') refetchTags();
     }
   };
 
@@ -392,6 +535,115 @@ export default function ProductFormPage() {
                               <FormMessage />
                             </FormItem>
                           )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="tags"
+                          render={() => {
+                            const tagOptions = allTags.filter(
+                              (t) => !selectedTags.some((st) => st.id === t.id),
+                            );
+                            let selectContent;
+                            if (tagsLoading) {
+                              selectContent = (
+                                <div className="px-4 py-2 text-muted-foreground">Загрузка...</div>
+                              );
+                            } else if (tagOptions.length === 0) {
+                              selectContent = (
+                                <div className="px-4 py-2 text-muted-foreground">
+                                  Нет доступных ярлыков
+                                </div>
+                              );
+                            } else {
+                              selectContent = tagOptions.map((tag) => (
+                                <SelectItem key={tag.id} value={tag.id}>
+                                  <span
+                                    className="inline-block w-4 h-4 rounded-full mr-2 align-middle"
+                                    style={{ backgroundColor: tag.color }}
+                                  />
+                                  <span className="align-middle">{tag.name}</span>
+                                </SelectItem>
+                              ));
+                            }
+                            return (
+                              <FormItem>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <FormLabel>Ярлыки</FormLabel>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="inline-flex items-center cursor-pointer text-muted-foreground">
+                                          <Info className="w-4 h-4" />
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="right" className="max-w-xs text-sm">
+                                        Выделите товар цветным ярлыком (Акция, Скидка, Популярный
+                                        товар и так далее).
+                                        <br />
+                                        Ярлыки можно менять местами, перетаскивая их.
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                  <DndContext
+                                    sensors={sensors}
+                                    collisionDetection={closestCenter}
+                                    onDragStart={handleTagDragStart}
+                                    onDragEnd={handleTagDragEnd}
+                                    onDragCancel={handleTagDragCancel}
+                                  >
+                                    <SortableContext
+                                      items={selectedTags.map((t) => t.id)}
+                                      strategy={rectSortingStrategy}
+                                    >
+                                      <div className="flex flex-wrap gap-2 mb-2">
+                                        {selectedTags.map((tag) => (
+                                          <TagChip
+                                            key={tag.id}
+                                            tag={tag}
+                                            onRemove={() => handleTagToggle(tag)}
+                                          />
+                                        ))}
+                                      </div>
+                                    </SortableContext>
+                                    <DragOverlay>
+                                      {activeDragTag ? (
+                                        <TagChip tag={activeDragTag} dragOverlay />
+                                      ) : null}
+                                    </DragOverlay>
+                                  </DndContext>
+                                  <Select
+                                    onOpenChange={handleSelectOpen}
+                                    onValueChange={(val) => {
+                                      const tag = allTags.find((t) => t.id === val);
+                                      if (tag) handleTagToggle(tag);
+                                    }}
+                                    disabled={selectedTags.length >= 5}
+                                  >
+                                    <SelectTrigger
+                                      className="w-full h-11"
+                                      disabled={selectedTags.length >= 5}
+                                    >
+                                      <SelectValue
+                                        placeholder={
+                                          tagsLoading ? 'Загрузка...' : 'Выберите ярлыки'
+                                        }
+                                      />
+                                    </SelectTrigger>
+                                    <SelectContent>{selectContent}</SelectContent>
+                                  </Select>
+                                  {selectedTags.length >= 5 && (
+                                    <div className="text-xs text-muted-foreground mt-1">
+                                      Можно выбрать не более 5 ярлыков
+                                    </div>
+                                  )}
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            );
+                          }}
                         />
                       </CardContent>
                     </Card>
