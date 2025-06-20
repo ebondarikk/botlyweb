@@ -256,6 +256,18 @@ export default function ProductFormPage() {
           })),
         );
 
+        // Показываем детали каждой категории
+        categoriesWithEmpty.forEach((cat, index) => {
+          const selectValue = cat.value || cat.name;
+          console.log(`Категория ${index}:`, {
+            name: cat.name,
+            value: cat.value,
+            selectValue,
+            'selectValue === productValues.category': selectValue === productValues.category,
+            'cat.name === productValues.category': cat.name === productValues.category,
+          });
+        });
+
         const categoryExists = categoriesWithEmpty.some((cat) => {
           const catValue = cat.value || cat.name;
           return (
@@ -279,7 +291,23 @@ export default function ProductFormPage() {
         }
       }
 
+      console.log('Финальные значения для формы:', productValues);
       form.reset(productValues);
+
+      // Дополнительная проверка после reset
+      setTimeout(() => {
+        const currentFormValue = form.getValues('category');
+        console.log('Значение category в форме после reset:', currentFormValue);
+
+        // Попытка принудительно обновить значение
+        if (productValues.category && currentFormValue !== productValues.category) {
+          console.log(
+            'Значения не совпадают! Принудительно устанавливаем:',
+            productValues.category,
+          );
+          form.setValue('category', productValues.category);
+        }
+      }, 100);
     }
   }, [existingProduct, form, categoriesWithEmpty]);
 
@@ -533,20 +561,27 @@ export default function ProductFormPage() {
                               <FormLabel>Категория</FormLabel>
                               <Select
                                 value={field.value || ''}
-                                onValueChange={(val) => field.onChange(val === '-' ? '' : val)}
+                                onValueChange={(val) => {
+                                  console.log('Select onValueChange called with:', val);
+                                  field.onChange(val === '-' ? '' : val);
+                                }}
                               >
                                 <SelectTrigger className="h-11">
                                   <SelectValue placeholder="Выберите категорию" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {categoriesWithEmpty.map((cat) => (
-                                    <SelectItem
-                                      key={cat.id}
-                                      value={cat.value ? cat.value : cat.name}
-                                    >
-                                      {cat.name}
-                                    </SelectItem>
-                                  ))}
+                                  {(() => {
+                                    console.log('Рендер Select. field.value:', field.value);
+                                    console.log('Список категорий в Select:', categoriesWithEmpty);
+                                    return categoriesWithEmpty.map((cat) => (
+                                      <SelectItem
+                                        key={cat.id}
+                                        value={cat.value ? cat.value : cat.name}
+                                      >
+                                        {cat.name}
+                                      </SelectItem>
+                                    ));
+                                  })()}
                                 </SelectContent>
                               </Select>
                               <FormMessage />
