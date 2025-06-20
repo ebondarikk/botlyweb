@@ -211,8 +211,9 @@ export default function ProductFormPage() {
     refetch: refetchTags,
   } = useTags(tagsLoaded ? params.bot_id : null);
 
-  useEffect(() => {
-    categories.unshift({ id: 'null', name: '-', value: '' });
+  // Создаем дополненный список категорий без мутации оригинального массива
+  const categoriesWithEmpty = React.useMemo(() => {
+    return [{ id: 'null', name: '-', value: '' }, ...categories];
   }, [categories]);
 
   const {
@@ -237,20 +238,50 @@ export default function ProductFormPage() {
   });
 
   useEffect(() => {
-    if (existingProduct) {
+    if (existingProduct && categoriesWithEmpty.length > 1) {
+      // > 1 потому что первая - пустая
       const productValues = getDefaultValues(existingProduct);
-      // Проверяем, существует ли категория в списке категорий
-      if (productValues.category && categories.length > 0) {
-        const categoryExists = categories.some(
-          (cat) => (cat.value ? cat.value : cat.name) === productValues.category,
+
+      // Улучшенная проверка существования категории
+      if (productValues.category) {
+        // TODO: Убрать логи после диагностики проблемы
+        console.log('Ищем категорию товара:', productValues.category);
+        console.log(
+          'Доступные категории:',
+          categoriesWithEmpty.map((cat) => ({
+            id: cat.id,
+            name: cat.name,
+            value: cat.value,
+            selectValue: cat.value || cat.name,
+          })),
         );
+
+        const categoryExists = categoriesWithEmpty.some((cat) => {
+          const catValue = cat.value || cat.name;
+          return (
+            catValue === productValues.category ||
+            cat.name === productValues.category ||
+            String(catValue) === String(productValues.category)
+          );
+        });
+
         if (!categoryExists) {
+          console.warn('Категория товара не найдена в списке:', productValues.category);
+
+          // ВРЕМЕННОЕ РЕШЕНИЕ: сохраняем оригинальную категорию товара
+          // Раскомментируйте следующую строку, если хотите сохранить категорию даже если её нет в списке
+          // productValues.category = productValues.category;
+
+          // Или сбрасываем в пустую строку (текущее поведение)
           productValues.category = '';
+        } else {
+          console.log('Категория найдена успешно');
         }
       }
+
       form.reset(productValues);
     }
-  }, [existingProduct, form, categories]);
+  }, [existingProduct, form, categoriesWithEmpty]);
 
   useEffect(() => {
     if (existingProduct && Array.isArray(existingProduct.tags)) {
@@ -508,7 +539,7 @@ export default function ProductFormPage() {
                                   <SelectValue placeholder="Выберите категорию" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {categories.map((cat) => (
+                                  {categoriesWithEmpty.map((cat) => (
                                     <SelectItem
                                       key={cat.id}
                                       value={cat.value ? cat.value : cat.name}
