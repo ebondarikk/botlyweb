@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -28,6 +29,8 @@ import {
   History,
   Save,
   AlertTriangle,
+  FileText,
+  Settings2,
 } from 'lucide-react';
 import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -55,11 +58,17 @@ import {
 } from '@/components/ui/form';
 import { useMailing } from '@/hooks/use-mailing';
 import { createMailing, updateMailing, publishMailing } from '@/lib/api';
+import { mailingSchema } from '@/lib/schemas';
 import BotLayout from '@/app/bot/layout';
 import ImageUpload from '@/components/image-upload';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible.tsx';
+import { Switch } from '@/components/ui/switch';
 import { useBot } from '@/context/BotContext';
 
 // Кастомное расширение для спойлеров
@@ -485,12 +494,15 @@ export default function MailingFormPage() {
 
   const form = useForm({
     defaultValues: {
+      title: '',
       content: {
         html: '',
         text: '',
       },
       image: '',
+      is_active: false,
     },
+    resolver: zodResolver(mailingSchema),
   });
 
   // Отслеживаем изменения формы
@@ -505,11 +517,13 @@ export default function MailingFormPage() {
   useEffect(() => {
     if (existingMailing) {
       form.reset({
+        title: existingMailing.title || '',
         content: {
           html: existingMailing.html_content || existingMailing.content || '',
           text: existingMailing.content || '',
         },
         image: existingMailing.image || '',
+        is_active: existingMailing.is_active || false,
       });
       setFormChanged(false);
     }
@@ -536,18 +550,20 @@ export default function MailingFormPage() {
     setSaving(true);
     try {
       const mailingData = {
+        title: values.title,
         content: values.content.text || '',
         html_content: values.content.html || '',
         image: values.image,
+        is_active: values.is_active,
       };
 
       if (existingMailing) {
         await updateMailing(params.bot_id, params.mailing_id, mailingData);
-        toast.success('Рассылка успешно сохранена');
+        toast.success('Новость успешно сохранена');
         setFormChanged(false);
       } else {
         await createMailing(params.bot_id, mailingData);
-        toast.success('Рассылка успешно создана');
+        toast.success('Новость успешно создана');
       }
       navigate(-1);
     } catch (error) {
@@ -581,12 +597,12 @@ export default function MailingFormPage() {
           </Button>
           <div>
             <h1 className="text-2xl font-semibold">
-              {existingMailing ? 'Редактировать рассылку' : 'Создать рассылку'}
+              {existingMailing ? 'Редактировать новость' : 'Создать новость'}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {existingMailing
-                ? 'Измените содержимое рассылки'
-                : 'Создайте новую рассылку для ваших подписчиков'}
+                ? 'Измените содержимое новости'
+                : 'Создайте новую новость для ваших подписчиков'}
             </p>
           </div>
         </motion.div>
@@ -600,25 +616,57 @@ export default function MailingFormPage() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr,300px] gap-6 sm:gap-8">
-            {/* Основная колонка */}
-            <div className="space-y-6">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <motion.div variants={cardVariants} initial="hidden" animate="visible" custom={0}>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <motion.div
+                variants={{
+                  visible: {
+                    transition: {
+                      staggerChildren: 0.1,
+                    },
+                  },
+                }}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+              >
+                {/* Левая колонка */}
+                <div className="space-y-6">
+                  <motion.div custom={0} variants={cardVariants}>
                     <Card className="custom-card border-border/50 overflow-hidden">
                       <CardHeader className="border-b bg-muted/40 px-6">
                         <div className="flex items-center gap-2">
-                          <ImageIcon className="w-5 h-5 text-primary" />
-                          <CardTitle className="text-base">Изображение</CardTitle>
+                          <MessageSquare className="w-5 h-5 text-primary" />
+                          <CardTitle className="text-base">Основная информация</CardTitle>
                         </div>
                       </CardHeader>
-                      <CardContent className="p-6">
+                      <CardContent className="p-6 space-y-6">
+                        <FormField
+                          control={form.control}
+                          name="title"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                Заголовок <span className="text-destructive">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  className="h-11"
+                                  placeholder="Введите заголовок новости"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
                         <FormField
                           control={form.control}
                           name="image"
                           render={({ field }) => (
                             <FormItem>
+                              <FormLabel>Изображение</FormLabel>
                               <div className="mt-2">
                                 <ImageUpload
                                   value={field.value}
@@ -635,12 +683,12 @@ export default function MailingFormPage() {
                     </Card>
                   </motion.div>
 
-                  <motion.div variants={cardVariants} initial="hidden" animate="visible" custom={1}>
+                  <motion.div custom={1} variants={cardVariants}>
                     <Card className="custom-card border-border/50 overflow-hidden">
                       <CardHeader className="border-b bg-muted/40 px-6">
                         <div className="flex items-center gap-2">
-                          <MessageSquare className="w-5 h-5 text-primary" />
-                          <CardTitle className="text-base">Содержимое рассылки</CardTitle>
+                          <FileText className="w-5 h-5 text-primary" />
+                          <CardTitle className="text-base">Содержимое новости</CardTitle>
                         </div>
                       </CardHeader>
                       <CardContent className="p-6">
@@ -659,201 +707,236 @@ export default function MailingFormPage() {
                       </CardContent>
                     </Card>
                   </motion.div>
+                </div>
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="flex items-center gap-4 pt-2"
-                  >
-                    <Button
-                      type="submit"
-                      size="lg"
-                      className="flex items-center gap-2"
-                      disabled={saving}
-                    >
-                      <Save className="w-4 h-4" />
-                      {saving ? (
+                {/* Правая колонка */}
+                <div className="space-y-6">
+                  <motion.div custom={2} variants={cardVariants}>
+                    <Card className="custom-card border-border/50 overflow-hidden">
+                      <CardHeader className="border-b bg-muted/40 px-6">
                         <div className="flex items-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                          Сохранение...
+                          <Settings2 className="w-5 h-5 text-primary" />
+                          <CardTitle className="text-base">Настройки</CardTitle>
                         </div>
-                      ) : (
-                        'Сохранить'
-                      )}
-                    </Button>
+                      </CardHeader>
+                      <CardContent className="p-6">
+                        <FormField
+                          control={form.control}
+                          name="is_active"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center space-x-3">
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                  id="mailing-active"
+                                />
+                                <FormLabel
+                                  htmlFor="mailing-active"
+                                  className="text-sm font-medium cursor-pointer"
+                                >
+                                  Отображать в магазине
+                                </FormLabel>
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </CardContent>
+                    </Card>
                   </motion.div>
-                </form>
-              </Form>
-            </div>
 
-            {/* Правая колонка */}
-            <div className="space-y-6">
-              {existingMailing && (
-                <motion.div variants={cardVariants} initial="hidden" animate="visible" custom={2}>
-                  <Card className="custom-card border-border/50 overflow-hidden">
-                    <CardHeader className="border-b bg-muted/40 px-6">
-                      <div className="flex items-center gap-2">
-                        <Send className="w-5 h-5 text-primary" />
-                        <CardTitle className="text-base">Публикация</CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-6 space-y-6">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div>
-                              <Button
-                                type="button"
-                                size="lg"
-                                className="w-full flex items-center gap-2 justify-center"
-                                onClick={() => setIsPublishDialogOpen(true)}
-                                disabled={
-                                  publishing ||
-                                  formChanged ||
-                                  (bot?.mailings_limit !== null && bot?.mailings_limit <= 0)
-                                }
-                              >
-                                <Send className="w-4 h-4" />
-                                {publishing ? (
-                                  <div className="flex items-center gap-2">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
-                                    Публикация...
-                                  </div>
-                                ) : (
-                                  'Опубликовать'
-                                )}
-                              </Button>
-                            </div>
-                          </TooltipTrigger>
-                          {formChanged ? (
-                            <TooltipContent side="left" sideOffset={20}>
-                              <p>Сохраните изменения перед публикацией</p>
-                            </TooltipContent>
-                          ) : bot?.mailings_limit !== null && bot?.mailings_limit <= 0 ? (
-                            <TooltipContent side="left" sideOffset={20}>
-                              <p>
-                                Лимит рассылок исчерпан. Для публикации новых рассылок необходимо
-                                повысить тариф.
-                              </p>
-                            </TooltipContent>
-                          ) : null}
-                        </Tooltip>
-                      </TooltipProvider>
-
-                      {/* История публикаций */}
-                      {existingMailing?.publishes?.length > 0 && (
-                        <>
-                          <div className="w-full h-px bg-border" />
-                          <div>
-                            <div className="flex items-center gap-2 mb-4">
-                              <History className="w-5 h-5 text-primary" />
-                              <h3 className="font-semibold text-base">История публикаций</h3>
-                            </div>
-                            <div className="space-y-3">
-                              <AnimatePresence>
-                                {existingMailing.publishes.map((publish, index) => (
-                                  <motion.div
-                                    key={publish.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.1 }}
-                                  >
-                                    <Collapsible
-                                      defaultOpen={!publish.done && !publish.error}
-                                      className="border-b border-border"
-                                    >
-                                      <CollapsibleTrigger className="w-full group/item">
-                                        <div className="flex items-center justify-between w-full py-2 hover:bg-muted/25 data-[state=open]:bg-muted/20 rounded-lg transition-all duration-200 ease-in-out cursor-pointer">
-                                          <div className="flex items-center gap-4">
-                                            {publish.done ? (
-                                              <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
-                                            ) : publish.error ? (
-                                              <XCircle className="w-5 h-5 text-destructive shrink-0" />
-                                            ) : (
-                                              <Clock className="w-5 h-5 text-amber-500 animate-pulse shrink-0" />
-                                            )}
-                                            <div className="text-sm font-medium">
-                                              {new Date(publish.published_at).toLocaleString(
-                                                'ru-RU',
-                                                {
-                                                  day: '2-digit',
-                                                  month: '2-digit',
-                                                  year: 'numeric',
-                                                  hour: '2-digit',
-                                                  minute: '2-digit',
-                                                },
-                                              )}
-                                            </div>
-                                          </div>
-                                          <div className="flex items-center gap-2">
-                                            <Badge
-                                              variant={publish.done ? 'success' : 'warning'}
-                                              className={`shrink-0 w-24 text-center flex items-center justify-center ${
-                                                publish.done
-                                                  ? 'bg-green-100 text-green-500'
-                                                  : publish.error
-                                                    ? 'bg-destructive/10 text-destructive'
-                                                    : 'bg-amber-100 text-amber-500'
-                                              }`}
-                                            >
-                                              {publish.done
-                                                ? 'Завершено'
-                                                : publish.error
-                                                  ? 'Ошибка'
-                                                  : 'В процессе'}
-                                            </Badge>
-                                            <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0 transition-transform duration-300 ease-in-out group-data-[state=open]/item:rotate-180" />
-                                          </div>
-                                        </div>
-                                      </CollapsibleTrigger>
-                                      <CollapsibleContent>
-                                        <motion.div
-                                          initial={{ opacity: 0, height: 0 }}
-                                          animate={{ opacity: 1, height: 'auto' }}
-                                          exit={{ opacity: 0, height: 0 }}
-                                          className=" space-y-3 border-l-2 ml-1"
-                                        >
-                                          <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-1.5">
-                                              <div className="text-xs text-muted-foreground">
-                                                Успешно отправлено
-                                              </div>
-                                              <div className="flex items-center gap-2 text-green-500">
-                                                <CheckCircle2 className="w-4 h-4" />
-                                                <span className="font-medium">
-                                                  {publish.success}
-                                                </span>
-                                              </div>
-                                            </div>
-                                            <div className="space-y-1.5">
-                                              <div className="text-xs text-muted-foreground">
-                                                Не доставлено
-                                              </div>
-                                              <div className="flex items-center gap-2 text-destructive">
-                                                <XCircle className="w-4 h-4" />
-                                                <span className="font-medium">
-                                                  {publish.failed}
-                                                </span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </motion.div>
-                                      </CollapsibleContent>
-                                    </Collapsible>
-                                  </motion.div>
-                                ))}
-                              </AnimatePresence>
-                            </div>
+                  {existingMailing && (
+                    <motion.div custom={3} variants={cardVariants}>
+                      <Card className="custom-card border-border/50 overflow-hidden">
+                        <CardHeader className="border-b bg-muted/40 px-6">
+                          <div className="flex items-center gap-2">
+                            <Send className="w-5 h-5 text-primary" />
+                            <CardTitle className="text-base">Публикация</CardTitle>
                           </div>
-                        </>
-                      )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
-            </div>
-          </div>
+                        </CardHeader>
+                        <CardContent className="p-6 space-y-6">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div>
+                                  <Button
+                                    type="button"
+                                    size="lg"
+                                    className="w-full flex items-center gap-2 justify-center"
+                                    onClick={() => setIsPublishDialogOpen(true)}
+                                    disabled={
+                                      publishing ||
+                                      formChanged ||
+                                      (bot?.mailings_limit !== null && bot?.mailings_limit <= 0)
+                                    }
+                                  >
+                                    <Send className="w-4 h-4" />
+                                    {publishing ? (
+                                      <div className="flex items-center gap-2">
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+                                        Публикация...
+                                      </div>
+                                    ) : (
+                                      'Опубликовать'
+                                    )}
+                                  </Button>
+                                </div>
+                              </TooltipTrigger>
+                              {formChanged ? (
+                                <TooltipContent side="left" sideOffset={20}>
+                                  <p>Сохраните изменения перед публикацией</p>
+                                </TooltipContent>
+                              ) : bot?.mailings_limit !== null && bot?.mailings_limit <= 0 ? (
+                                <TooltipContent side="left" sideOffset={20}>
+                                  <p>
+                                    Лимит рассылок исчерпан. Для публикации новых рассылок
+                                    необходимо повысить тариф.
+                                  </p>
+                                </TooltipContent>
+                              ) : null}
+                            </Tooltip>
+                          </TooltipProvider>
+
+                          {/* История публикаций */}
+                          {existingMailing?.publishes?.length > 0 && (
+                            <>
+                              <div className="w-full h-px bg-border" />
+                              <div>
+                                <div className="flex items-center gap-2 mb-4">
+                                  <History className="w-5 h-5 text-primary" />
+                                  <h3 className="font-semibold text-base">История публикаций</h3>
+                                </div>
+                                <div className="space-y-3">
+                                  <AnimatePresence>
+                                    {existingMailing.publishes.map((publish, index) => (
+                                      <motion.div
+                                        key={publish.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.1 }}
+                                      >
+                                        <Collapsible
+                                          defaultOpen={!publish.done && !publish.error}
+                                          className="border-b border-border"
+                                        >
+                                          <CollapsibleTrigger className="w-full group/item">
+                                            <div className="flex items-center justify-between w-full py-2 hover:bg-muted/25 data-[state=open]:bg-muted/20 rounded-lg transition-all duration-200 ease-in-out cursor-pointer">
+                                              <div className="flex items-center gap-4">
+                                                {publish.done ? (
+                                                  <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+                                                ) : publish.error ? (
+                                                  <XCircle className="w-5 h-5 text-destructive shrink-0" />
+                                                ) : (
+                                                  <Clock className="w-5 h-5 text-amber-500 animate-pulse shrink-0" />
+                                                )}
+                                                <div className="text-sm font-medium">
+                                                  {new Date(publish.published_at).toLocaleString(
+                                                    'ru-RU',
+                                                    {
+                                                      day: '2-digit',
+                                                      month: '2-digit',
+                                                      year: 'numeric',
+                                                      hour: '2-digit',
+                                                      minute: '2-digit',
+                                                    },
+                                                  )}
+                                                </div>
+                                              </div>
+                                              <div className="flex items-center gap-2">
+                                                <Badge
+                                                  variant={publish.done ? 'success' : 'warning'}
+                                                  className={`shrink-0 w-24 text-center flex items-center justify-center ${
+                                                    publish.done
+                                                      ? 'bg-green-100 text-green-500'
+                                                      : publish.error
+                                                        ? 'bg-destructive/10 text-destructive'
+                                                        : 'bg-amber-100 text-amber-500'
+                                                  }`}
+                                                >
+                                                  {publish.done
+                                                    ? 'Завершено'
+                                                    : publish.error
+                                                      ? 'Ошибка'
+                                                      : 'В процессе'}
+                                                </Badge>
+                                                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0 transition-transform duration-300 ease-in-out group-data-[state=open]/item:rotate-180" />
+                                              </div>
+                                            </div>
+                                          </CollapsibleTrigger>
+                                          <CollapsibleContent>
+                                            <motion.div
+                                              initial={{ opacity: 0, height: 0 }}
+                                              animate={{ opacity: 1, height: 'auto' }}
+                                              exit={{ opacity: 0, height: 0 }}
+                                              className=" space-y-3 border-l-2 ml-1"
+                                            >
+                                              <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1.5">
+                                                  <div className="text-xs text-muted-foreground">
+                                                    Успешно отправлено
+                                                  </div>
+                                                  <div className="flex items-center gap-2 text-green-500">
+                                                    <CheckCircle2 className="w-4 h-4" />
+                                                    <span className="font-medium">
+                                                      {publish.success}
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                  <div className="text-xs text-muted-foreground">
+                                                    Не доставлено
+                                                  </div>
+                                                  <div className="flex items-center gap-2 text-destructive">
+                                                    <XCircle className="w-4 h-4" />
+                                                    <span className="font-medium">
+                                                      {publish.failed}
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </motion.div>
+                                          </CollapsibleContent>
+                                        </Collapsible>
+                                      </motion.div>
+                                    ))}
+                                  </AnimatePresence>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  )}
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="flex items-center gap-4 pt-2"
+              >
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="flex items-center gap-2"
+                  disabled={saving}
+                >
+                  <Save className="w-4 h-4" />
+                  {saving ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                      Сохранение...
+                    </div>
+                  ) : (
+                    'Сохранить'
+                  )}
+                </Button>
+              </motion.div>
+            </form>
+          </Form>
         )}
       </motion.div>
 

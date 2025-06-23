@@ -1,6 +1,15 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { SearchIcon, Plus, Send, Clock, Calendar, MessageSquare } from 'lucide-react';
+import {
+  SearchIcon,
+  Plus,
+  Send,
+  Clock,
+  Calendar,
+  MessageSquare,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -26,19 +35,15 @@ import { Badge } from '@/components/ui/badge';
 
 function MailingSkeleton() {
   return (
-    <Card className="flex flex-col custom-card h-[320px] border-border/50">
-      <CardHeader className="flex-grow min-h-[200px] p-6 rounded-t-lg bg-muted/20">
-        <div className="h-full flex flex-col">
-          <div className="flex items-start justify-between gap-3 mb-auto">
-            <div className="w-3/4">
-              <div className="space-y-2">
-                <div className="h-4 w-full bg-muted/50 rounded" />
-                <div className="h-4 w-2/3 bg-muted/50 rounded" />
-                <div className="h-4 w-1/2 bg-muted/50 rounded" />
-              </div>
-            </div>
-            <div className="h-6 w-24 bg-muted/50 rounded-full" />
-          </div>
+    <Card className="flex flex-col custom-card h-[480px] border-border/50">
+      <div className="h-64 bg-muted/20 rounded-t-lg flex items-center justify-center">
+        <div className="text-muted-foreground/50 text-sm">Нет фото</div>
+      </div>
+      <CardHeader className="p-6">
+        <div className="space-y-3">
+          <div className="h-5 w-3/4 bg-muted/50 rounded" />
+          <div className="h-4 w-full bg-muted/50 rounded" />
+          <div className="h-4 w-2/3 bg-muted/50 rounded" />
         </div>
       </CardHeader>
       <CardFooter className="flex justify-between items-center pt-4 px-6 border-t border-border/40">
@@ -141,12 +146,12 @@ export default function MailingsList() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex py-4 flex-col md:flex-row justify-between w-full gap-4 items-center"
         >
-          <div className="text-lg font-medium">Найдено {count} рассылок</div>
+          <div className="text-lg font-medium">Найдено {count} новостей</div>
 
           <Button asChild className="bg-primary hover:bg-primary/90">
             <Link to="add" className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
-              Добавить рассылку
+              Добавить новость
             </Link>
           </Button>
         </motion.div>
@@ -168,9 +173,9 @@ export default function MailingsList() {
               }}
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
-              {Array.from({ length: 6 }).map((_, idx) => (
+              {Array.from({ length: 6 }, (_, i) => `skeleton-${i}`).map((key) => (
                 <motion.div
-                  key={`skeleton-${idx}`}
+                  key={key}
                   variants={{
                     hidden: { opacity: 0, y: 20 },
                     visible: {
@@ -214,55 +219,71 @@ export default function MailingsList() {
                     whileHover={{ y: -5 }}
                   >
                     <Link to={`/${bot.id}/mailings/${mailing.id}`}>
-                      <Card className="flex flex-col custom-card h-[320px] group transition-all duration-300 ease-in-out border-border/50 hover:border-primary/50 overflow-hidden">
-                        <CardHeader
-                          className={cn(
-                            'flex-grow relative min-h-[200px] p-6 rounded-t-lg overflow-hidden',
-                            mailing.preview_image
-                              ? 'before:absolute before:inset-0 before:bg-gradient-to-b before:from-black/40 before:via-black/60 before:to-black/90 before:z-0 before:transition-opacity before:duration-300 group-hover:before:opacity-70'
-                              : 'bg-muted/20',
-                          )}
-                        >
-                          {mailing.preview_image && (
+                      <Card className="flex flex-col custom-card h-[480px] group transition-all duration-300 ease-in-out border-border/50 hover:border-primary/50 overflow-hidden">
+                        {/* Изображение */}
+                        <div className="relative h-64 overflow-hidden">
+                          {mailing.preview_image ? (
                             <motion.div
-                              className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-transform duration-500"
+                              className="w-full h-full bg-cover bg-center bg-no-repeat transition-transform duration-500"
                               style={{ backgroundImage: `url(${mailing.preview_image})` }}
                               whileHover={{ scale: 1.05 }}
                               transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
                             />
-                          )}
-                          <div className="relative z-1 h-full flex flex-col">
-                            <div className="flex items-start justify-between gap-3">
-                              {mailing.published ? (
-                                <Badge
-                                  variant="success"
-                                  className="shadow-lg flex items-center gap-1.5 bg-primary/90"
-                                >
-                                  <Send className="w-3.5 h-3.5" />
-                                  Опубликовано
-                                </Badge>
-                              ) : (
-                                <Badge
-                                  variant="outline"
-                                  className="shadow-lg flex items-center gap-1.5 bg-card/80 backdrop-blur-sm"
-                                >
-                                  <Clock className="w-3.5 h-3.5" />
-                                  Черновик
-                                </Badge>
-                              )}
+                          ) : (
+                            <div className="w-full h-full bg-muted/20 flex items-center justify-center">
+                              <div className="text-muted-foreground/50 text-sm">Нет фото</div>
                             </div>
+                          )}
 
-                            <div className="mt-auto">
-                              <CardTitle
-                                className={cn(
-                                  'text-lg font-semibold line-clamp-4 leading-snug transition-all duration-300',
-                                  mailing.preview_image
-                                    ? 'text-white drop-shadow-lg group-hover:text-primary-foreground'
-                                    : 'text-foreground group-hover:text-primary',
-                                )}
+                          {/* Статус публикации поверх изображения */}
+                          <div className="absolute top-3 left-3">
+                            {mailing.published ? (
+                              <Badge
+                                variant="success"
+                                className="shadow-lg flex items-center gap-1.5 bg-primary/90"
                               >
-                                {mailing.content}
-                              </CardTitle>
+                                <Send className="w-3.5 h-3.5" />
+                                Опубликовано
+                              </Badge>
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="shadow-lg flex items-center gap-1.5 bg-card/80 backdrop-blur-sm"
+                              >
+                                <Clock className="w-3.5 h-3.5" />
+                                Черновик
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Содержимое карточки */}
+                        <CardHeader className="p-6">
+                          <div className="space-y-3">
+                            <CardTitle className="text-lg font-semibold line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+                              {mailing.title || 'Без заголовка'}
+                            </CardTitle>
+                            <CardDescription className="text-sm line-clamp-2 leading-relaxed text-muted-foreground">
+                              {mailing.content}
+                            </CardDescription>
+
+                            {/* Статус активности */}
+                            <div className="flex items-center gap-2 pt-2">
+                              {mailing.is_active ? (
+                                <div className="flex items-center gap-2 text-green-600">
+                                  <CheckCircle2 className="w-4 h-4" />
+                                  <span className="text-sm font-medium">
+                                    Отображается в магазине
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <XCircle className="w-4 h-4" />
+                                  <span className="text-sm font-medium">
+                                    Не отображается в магазине
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </CardHeader>

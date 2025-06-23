@@ -40,7 +40,7 @@ export function useMailings(
       setMailings(response.mailings);
       setCount(response.count);
     } catch (err) {
-      toast.error(`Ошибка загрузки рассылок: ${err?.message}` || err);
+      toast.error(`Ошибка загрузки новостей: ${err?.message}` || err);
     } finally {
       setLoading(false);
     }

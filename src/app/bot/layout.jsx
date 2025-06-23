@@ -27,7 +27,7 @@ import {
   LayoutDashboard,
   ShoppingCart,
   Folder,
-  Send,
+  Megaphone,
   Settings,
   UsersRound,
   ChartNoAxesCombined,
@@ -68,9 +68,9 @@ const items = [
     icon: Tag,
   },
   {
-    name: 'Рассылки',
+    name: 'Новости и рассылки',
     url: (bot_id) => `/${bot_id}/mailings`,
-    icon: Send,
+    icon: Megaphone,
   },
   {
     name: 'Менеджеры',

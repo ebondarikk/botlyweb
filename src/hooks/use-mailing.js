@@ -59,7 +59,7 @@ export function useMailing(botId, mailingId) {
         startPolling();
       }
     } catch (err) {
-      toast.error(`Не удалось загрузить рассылку: ${err?.message}` || err);
+      toast.error(`Не удалось загрузить новость: ${err?.message}` || err);
     } finally {
       setLoading(false);
     }
@@ -69,7 +69,7 @@ export function useMailing(botId, mailingId) {
     setPublishing(true);
     try {
       const result = await publishMailing(botId, mailingId);
-      toast.success('Рассылка будет опубликована в ближайшее время');
+      toast.success('Новость будет разослана в ближайшее время');
 
       // Обновляем публикации и запускаем опрос
       setMailing((prev) => ({
