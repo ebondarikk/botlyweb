@@ -226,90 +226,64 @@ export default function ProductFormPage() {
   const [deleting, setDeleting] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
   const [activeDragTag, setActiveDragTag] = useState(null);
-
-  const defaultValues = existingProduct
-    ? getDefaultValues(existingProduct)
-    : getDefaultValues(null);
+  const [formInitialized, setFormInitialized] = useState(false);
 
   const form = useForm({
-    defaultValues,
+    defaultValues: getDefaultValues(null), // Всегда начинаем с пустых значений
     resolver: zodResolver(ProductSchema),
     mode: 'onChange',
   });
 
+  // Единый useEffect для инициализации формы
   useEffect(() => {
-    if (existingProduct && categoriesWithEmpty.length > 1) {
-      // > 1 потому что первая - пустая
-      const productValues = getDefaultValues(existingProduct);
-
-      // Улучшенная проверка существования категории
-      if (productValues.category) {
-        // TODO: Убрать логи после диагностики проблемы
-        console.log('Ищем категорию товара:', productValues.category);
-        console.log(
-          'Доступные категории:',
-          categoriesWithEmpty.map((cat) => ({
-            id: cat.id,
-            name: cat.name,
-            value: cat.value,
-            selectValue: cat.value || cat.name,
-          })),
-        );
-
-        // Показываем детали каждой категории
-        categoriesWithEmpty.forEach((cat, index) => {
-          const selectValue = cat.value || cat.name;
-          console.log(`Категория ${index}:`, {
-            name: cat.name,
-            value: cat.value,
-            selectValue,
-            'selectValue === productValues.category': selectValue === productValues.category,
-            'cat.name === productValues.category': cat.name === productValues.category,
-          });
-        });
-
-        const categoryExists = categoriesWithEmpty.some((cat) => {
-          const catValue = cat.value || cat.name;
-          return (
-            catValue === productValues.category ||
-            cat.name === productValues.category ||
-            String(catValue) === String(productValues.category)
-          );
-        });
-
-        if (!categoryExists) {
-          console.warn('Категория товара не найдена в списке:', productValues.category);
-
-          // ВРЕМЕННОЕ РЕШЕНИЕ: сохраняем оригинальную категорию товара
-          // Раскомментируйте следующую строку, если хотите сохранить категорию даже если её нет в списке
-          // productValues.category = productValues.category;
-
-          // Или сбрасываем в пустую строку (текущее поведение)
-          productValues.category = '';
-        } else {
-          console.log('Категория найдена успешно');
-        }
-      }
-
-      console.log('Финальные значения для формы:', productValues);
-      form.reset(productValues);
-
-      // Дополнительная проверка после reset
-      setTimeout(() => {
-        const currentFormValue = form.getValues('category');
-        console.log('Значение category в форме после reset:', currentFormValue);
-
-        // Попытка принудительно обновить значение
-        if (productValues.category && currentFormValue !== productValues.category) {
-          console.log(
-            'Значения не совпадают! Принудительно устанавливаем:',
-            productValues.category,
-          );
-          form.setValue('category', productValues.category);
-        }
-      }, 100);
+    // Проверяем, что у нас есть все нужные данные
+    if (!existingProduct || categoriesWithEmpty.length === 0 || formInitialized) {
+      return;
     }
-  }, [existingProduct, form, categoriesWithEmpty]);
+
+    // Получаем данные товара
+    const productValues = getDefaultValues(existingProduct);
+    // Корректируем категорию сразу в productValues
+    const originalCategory = existingProduct.category;
+    if (originalCategory) {
+      // Ищем категорию в списке
+      const foundCategory = categoriesWithEmpty.find((cat) => {
+        const catSelectValue =
+          cat.value && cat.value !== 'undefined' && cat.value !== 'null' ? cat.value : cat.name;
+        return catSelectValue === originalCategory || cat.name === originalCategory;
+      });
+
+      if (foundCategory) {
+        const valueToSet =
+          foundCategory.value &&
+          foundCategory.value !== 'undefined' &&
+          foundCategory.value !== 'null'
+            ? foundCategory.value
+            : foundCategory.name;
+        productValues.category = valueToSet;
+      } else {
+        productValues.category = '';
+      }
+    }
+
+    // Заполняем форму сразу с правильной категорией
+    form.reset(productValues);
+
+    // Проверяем что установилось и принудительно устанавливаем категорию еще раз
+    setTimeout(() => {
+      const formCategory = form.getValues('category');
+      if (productValues.category && formCategory !== productValues.category) {
+        form.setValue('category', productValues.category, { shouldDirty: true });
+      }
+    }, 100);
+
+    setFormInitialized(true);
+  }, [existingProduct, categoriesWithEmpty, form, formInitialized]);
+
+  // Сбрасываем состояние инициализации при смене товара или загрузке категорий
+  useEffect(() => {
+    setFormInitialized(false);
+  }, [params.product_id, categories.length]);
 
   useEffect(() => {
     if (existingProduct && Array.isArray(existingProduct.tags)) {
@@ -562,7 +536,6 @@ export default function ProductFormPage() {
                               <Select
                                 value={field.value || ''}
                                 onValueChange={(val) => {
-                                  console.log('Select onValueChange called with:', val);
                                   field.onChange(val === '-' ? '' : val);
                                 }}
                               >
@@ -570,18 +543,18 @@ export default function ProductFormPage() {
                                   <SelectValue placeholder="Выберите категорию" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {(() => {
-                                    console.log('Рендер Select. field.value:', field.value);
-                                    console.log('Список категорий в Select:', categoriesWithEmpty);
-                                    return categoriesWithEmpty.map((cat) => (
-                                      <SelectItem
-                                        key={cat.id}
-                                        value={cat.value ? cat.value : cat.name}
-                                      >
+                                  {categoriesWithEmpty.map((cat) => {
+                                    // Правильно определяем значение для Select
+                                    const selectValue =
+                                      cat.value && cat.value !== 'undefined' && cat.value !== 'null'
+                                        ? cat.value
+                                        : cat.name;
+                                    return (
+                                      <SelectItem key={cat.id} value={selectValue}>
                                         {cat.name}
                                       </SelectItem>
-                                    ));
-                                  })()}
+                                    );
+                                  })}
                                 </SelectContent>
                               </Select>
                               <FormMessage />

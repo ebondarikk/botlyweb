@@ -21,6 +21,7 @@ const paymentMethodSchema = z.object({
   name: z.string().min(1, 'Введите название метода оплаты'),
   is_active: z.boolean(),
   is_default: z.boolean(),
+  request_banknote: z.boolean(),
   details: z.string().optional(),
 });
 
@@ -99,6 +100,7 @@ export default function PaymentMethods({ bot, openAccordion, setOpenAccordion })
       name: '',
       is_active: true,
       is_default: false,
+      request_banknote: false,
       details: '',
     };
     setPaymentMethods([...paymentMethods, newMethod]);
@@ -227,6 +229,22 @@ export default function PaymentMethods({ bot, openAccordion, setOpenAccordion })
                           />
                           <Label htmlFor={`is_default_${method.id || `new-${index}`}`}>
                             По умолчанию
+                          </Label>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            id={`request_banknote_${method.id || `new-${index}`}`}
+                            checked={method.request_banknote || false}
+                            onCheckedChange={(checked) => {
+                              const updatedMethod = { ...method, request_banknote: checked };
+                              setPaymentMethods(
+                                paymentMethods.map((m, i) => (i === index ? updatedMethod : m)),
+                              );
+                            }}
+                          />
+                          <Label htmlFor={`request_banknote_${method.id || `new-${index}`}`}>
+                            Уточнять купюру
                           </Label>
                         </div>
                       </div>
