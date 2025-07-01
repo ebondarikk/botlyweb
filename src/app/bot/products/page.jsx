@@ -500,10 +500,53 @@ export default function ProductList() {
                         className="flex items-baseline gap-1"
                         whileHover={{ scale: 1.05 }}
                       >
-                        <span className="text-2xl font-bold text-foreground">{product.price}</span>
-                        <span className="text-sm text-muted-foreground font-medium">
-                          {bot.currency}
-                        </span>
+                        {/* Логика отображения цены */}
+                        {(() => {
+                          // Проверяем есть ли скидка
+                          const hasDiscount =
+                            product.discount_price && parseFloat(product.discount_price) > 0;
+
+                          // Для сгруппированных товаров проверяем разные ли цены у подтоваров
+                          let showFromPrefix = false;
+                          if (
+                            product.grouped &&
+                            product.subproducts &&
+                            product.subproducts.length > 0
+                          ) {
+                            const prices = product.subproducts.map(
+                              (sub) => parseFloat(sub.price) || 0,
+                            );
+                            const uniquePrices = [...new Set(prices)];
+                            showFromPrefix = uniquePrices.length > 1;
+                          }
+
+                          return (
+                            <div className="flex items-baseline gap-2">
+                              {/* Префикс "от" для сгруппированных товаров с разными ценами */}
+                              {showFromPrefix && (
+                                <span className="text-sm text-muted-foreground font-medium">
+                                  от
+                                </span>
+                              )}
+
+                              {/* Старая цена (зачеркнутая, если есть скидка) */}
+                              {hasDiscount && (
+                                <span className="text-lg font-medium text-muted-foreground line-through">
+                                  {product.price}
+                                </span>
+                              )}
+
+                              {/* Основная цена */}
+                              <span className="text-2xl font-bold text-foreground">
+                                {hasDiscount ? product.discount_price : product.price}
+                              </span>
+
+                              <span className="text-sm text-muted-foreground font-medium">
+                                {bot.currency}
+                              </span>
+                            </div>
+                          );
+                        })()}
                       </motion.div>
                     </CardFooter>
                   </Card>

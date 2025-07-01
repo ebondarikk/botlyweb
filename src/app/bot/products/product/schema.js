@@ -13,6 +13,11 @@ export const SubproductSchema = z
       },
       z.number().min(0.01, 'Цена должна быть больше 0.01'),
     ),
+    discount_price: z.preprocess((val) => {
+      // Если передана пустая строка, превращаем в null
+      if (val === '') return null;
+      return Number(val);
+    }, z.number().min(0.01, 'Цена со скидкой должна быть больше 0.01').nullable().optional()),
     // Здесь убираем проверки через .refine, оставляем только типизацию
     warehouse_count: z.preprocess((val) => {
       // Если val пустая строка — делаем ноль или null (на ваше усмотрение)
@@ -44,6 +49,11 @@ const BaseProductSchema = z.object({
     },
     z.number().min(0.01, 'Цена должна быть больше 0.01'),
   ),
+  discount_price: z.preprocess((val) => {
+    // Если передана пустая строка, превращаем в null
+    if (val === '') return null;
+    return Number(val);
+  }, z.number().min(0.01, 'Цена со скидкой должна быть больше 0.01').nullable().optional()),
   image: z.string().nonempty('Загрузите изображение'),
   category: z.string().nullable().optional(),
   frozen: z.boolean(),
@@ -62,6 +72,17 @@ const BaseProductSchema = z.object({
 
 // Схема продукта с проверками на уровне всего объекта
 export const ProductSchema = BaseProductSchema.superRefine((data, ctx) => {
+  // Проверка цены со скидкой для основного товара
+  if (data.discount_price !== null && data.discount_price !== undefined) {
+    if (data.discount_price >= data.price) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['discount_price'],
+        message: 'Цена со скидкой должна быть меньше обычной цены',
+      });
+    }
+  }
+
   if (data.grouped) {
     // Для сгруппированного товара:
     // - Обязательно должен быть хотя бы один подтовар
@@ -78,6 +99,21 @@ export const ProductSchema = BaseProductSchema.superRefine((data, ctx) => {
         code: z.ZodIssueCode.custom,
         path: ['warehouse_count'],
         message: 'Склад должен быть выключен у сгруппированного товара',
+      });
+    }
+
+    // Проверка цен со скидкой для подтоваров
+    if (data.subproducts) {
+      data.subproducts.forEach((subproduct, index) => {
+        if (subproduct.discount_price !== null && subproduct.discount_price !== undefined) {
+          if (subproduct.discount_price >= subproduct.price) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ['subproducts', index, 'discount_price'],
+              message: 'Цена со скидкой должна быть меньше обычной цены',
+            });
+          }
+        }
       });
     }
   } else {

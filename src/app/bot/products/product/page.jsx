@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Form,
@@ -148,6 +148,7 @@ function getDefaultValues(product) {
       image: '',
       preview_image: '',
       price: '0.00',
+      discount_price: '',
       description: '',
       category: '',
       grouped: false,
@@ -162,6 +163,7 @@ function getDefaultValues(product) {
     image: product.image || '',
     preview_image: product.preview_image || '',
     price: product.price || '0.00',
+    discount_price: product.discount_price || '',
     description: product.description || '',
     category: product.category || '',
     grouped: typeof product.grouped !== 'undefined' ? product.grouped : false,
@@ -173,6 +175,7 @@ function getDefaultValues(product) {
         name: sub.name || '',
         frozen: sub.frozen || false,
         price: sub.price || product.price || '0.00',
+        discount_price: sub.discount_price || '',
         warehouse: sub.warehouse || false,
         warehouse_count: sub.warehouse_count || 0,
       })) || [],
@@ -227,12 +230,19 @@ export default function ProductFormPage() {
   const [selectedTags, setSelectedTags] = useState([]);
   const [activeDragTag, setActiveDragTag] = useState(null);
   const [formInitialized, setFormInitialized] = useState(false);
+  const [showMainDiscount, setShowMainDiscount] = useState(false);
+  const [showSubDiscounts, setShowSubDiscounts] = useState({});
 
   const form = useForm({
     defaultValues: getDefaultValues(null), // Всегда начинаем с пустых значений
     resolver: zodResolver(ProductSchema),
-    mode: 'onChange',
+    mode: 'all',
+    reValidateMode: 'onChange',
   });
+
+  const subproducts = useWatch({ control: form.control, name: 'subproducts' }) || [];
+  const subPrices = subproducts.map((sub) => parseFloat(sub.price));
+  const subDiscountValues = subproducts.map((sub) => parseFloat(sub.discount_price));
 
   // Единый useEffect для инициализации формы
   useEffect(() => {
@@ -277,6 +287,22 @@ export default function ProductFormPage() {
       }
     }, 100);
 
+    // Показываем поле скидки, если у товара уже есть скидка
+    if (existingProduct.discount_price) {
+      setShowMainDiscount(true);
+    }
+
+    // Показываем поля скидок для подтоваров, если они есть
+    if (existingProduct.subproducts) {
+      const subDiscounts = {};
+      existingProduct.subproducts.forEach((sub, index) => {
+        if (sub.discount_price) {
+          subDiscounts[index] = true;
+        }
+      });
+      setShowSubDiscounts(subDiscounts);
+    }
+
     setFormInitialized(true);
   }, [existingProduct, categoriesWithEmpty, form, formInitialized]);
 
@@ -284,6 +310,34 @@ export default function ProductFormPage() {
   useEffect(() => {
     setFormInitialized(false);
   }, [params.product_id, categories.length]);
+
+  // useEffect для price
+  useEffect(() => {
+    const isGrouped = form.watch('grouped');
+    if (isGrouped && subPrices.length > 0) {
+      const prices = subPrices.filter((val) => !Number.isNaN(val) && val > 0);
+      if (prices.length > 0) {
+        const minPrice = Math.min(...prices);
+        form.setValue('price', minPrice.toFixed(2));
+      }
+    }
+    // eslint-disable-next-line
+  }, [form.watch('grouped'), ...subPrices]);
+
+  // useEffect для discount_price
+  useEffect(() => {
+    const isGrouped = form.watch('grouped');
+    if (isGrouped && subDiscountValues.length > 0) {
+      const discounts = subDiscountValues.filter((val) => !Number.isNaN(val) && val > 0);
+      if (discounts.length > 0) {
+        const minDiscount = Math.min(...discounts);
+        form.setValue('discount_price', minDiscount.toFixed(2));
+      } else {
+        form.setValue('discount_price', '');
+      }
+    }
+    // eslint-disable-next-line
+  }, [form.watch('grouped'), ...subDiscountValues]);
 
   useEffect(() => {
     if (existingProduct && Array.isArray(existingProduct.tags)) {
@@ -387,6 +441,8 @@ export default function ProductFormPage() {
         frozen: false,
         warehouse: false,
         warehouse_count: 0,
+        price: form.getValues('price') || '0.00',
+        discount_price: '',
       });
     }
   };
@@ -510,21 +566,80 @@ export default function ProductFormPage() {
                         <FormField
                           control={form.control}
                           name="price"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Цена</FormLabel>
-                              <FormControl>
-                                <Input
-                                  className="h-11"
-                                  type="number"
-                                  step="0.01"
-                                  min="0.01"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
+                          render={({ field }) => {
+                            const isGrouped = form.watch('grouped');
+
+                            // Вычисляем минимальную цену подтоваров (ТОЛЬКО обычную цену)
+                            const minSubPrice =
+                              subproducts.length > 0
+                                ? Math.min(...subproducts.map((sub) => parseFloat(sub.price) || 0))
+                                : 0;
+
+                            // Для сгруппированных товаров показываем минимальную обычную цену
+                            const displayValue = isGrouped ? minSubPrice.toFixed(2) : field.value;
+
+                            return (
+                              <FormItem>
+                                <div className="flex flex-row gap-4 w-full">
+                                  <div className="w-full sm:w-32">
+                                    <FormLabel className="text-sm mb-1">Цена</FormLabel>
+                                  </div>
+                                  <div className="w-full sm:w-32">
+                                    <FormLabel className="text-sm mb-1">Цена со скидкой</FormLabel>
+                                  </div>
+                                </div>
+                                <div className="flex flex-row gap-4 w-full">
+                                  <div className="w-full sm:w-32">
+                                    <FormControl>
+                                      <Input
+                                        className="h-11 w-full"
+                                        type="number"
+                                        step="0.01"
+                                        min="0.01"
+                                        value={displayValue}
+                                        onChange={field.onChange}
+                                        disabled={isGrouped}
+                                        placeholder={isGrouped ? 'Автоматически' : '0.00'}
+                                      />
+                                    </FormControl>
+                                  </div>
+                                  <div className="w-full sm:w-32">
+                                    <FormField
+                                      control={form.control}
+                                      name="discount_price"
+                                      render={({ field: discountField }) => {
+                                        const isProductGrouped = form.watch('grouped');
+
+                                        return (
+                                          <FormItem>
+                                            <FormControl>
+                                              <Input
+                                                className="h-11 w-full"
+                                                type="number"
+                                                step="0.01"
+                                                min="0.01"
+                                                value={discountField.value || ''}
+                                                onChange={(e) => {
+                                                  if (!isProductGrouped) {
+                                                    discountField.onChange(e.target.value);
+                                                  }
+                                                }}
+                                                disabled={isProductGrouped}
+                                                placeholder={
+                                                  isProductGrouped ? 'Автоматически' : '0.00'
+                                                }
+                                              />
+                                            </FormControl>
+                                            <FormMessage />
+                                          </FormItem>
+                                        );
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              </FormItem>
+                            );
+                          }}
                         />
 
                         <FormField
@@ -868,6 +983,8 @@ export default function ProductFormPage() {
                                     frozen: false,
                                     warehouse: false,
                                     warehouse_count: 0,
+                                    price: '0.00',
+                                    discount_price: '',
                                   })
                                 }
                                 className="h-8 px-3"
@@ -898,7 +1015,23 @@ export default function ProductFormPage() {
                                             variant="ghost"
                                             size="sm"
                                             className="text-destructive hover:text-destructive/90 hover:bg-destructive/10 h-8 px-3"
-                                            onClick={() => remove(idx)}
+                                            onClick={() => {
+                                              remove(idx);
+                                              // Очищаем состояние скидки для удаленного подтовара
+                                              setShowSubDiscounts((prev) => {
+                                                const newState = { ...prev };
+                                                delete newState[idx];
+                                                // Сдвигаем индексы для подтоваров после удаленного
+                                                Object.keys(newState).forEach((key) => {
+                                                  const keyNum = parseInt(key, 10);
+                                                  if (keyNum > idx) {
+                                                    newState[keyNum - 1] = newState[keyNum];
+                                                    delete newState[keyNum];
+                                                  }
+                                                });
+                                                return newState;
+                                              });
+                                            }}
                                           >
                                             <Trash2 className="w-4 h-4 mr-1" />
                                             Удалить
@@ -927,17 +1060,55 @@ export default function ProductFormPage() {
                                         name={`subproducts.${idx}.price`}
                                         render={({ field }) => (
                                           <FormItem>
-                                            <FormLabel>Цена</FormLabel>
-                                            <FormControl>
-                                              <Input
-                                                type="number"
-                                                step="0.01"
-                                                min="0.01"
-                                                className="h-11"
-                                                {...field}
-                                              />
-                                            </FormControl>
-                                            <FormMessage />
+                                            <div className="flex flex-row gap-4 w-full">
+                                              <div className="w-full sm:w-32">
+                                                <FormLabel className="text-sm mb-1">Цена</FormLabel>
+                                              </div>
+                                              <div className="w-full sm:w-32">
+                                                <FormLabel className="text-sm mb-1">
+                                                  Цена со скидкой
+                                                </FormLabel>
+                                              </div>
+                                            </div>
+                                            <div className="flex flex-row gap-4 w-full">
+                                              <div className="w-full sm:w-32">
+                                                <FormControl>
+                                                  <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0.01"
+                                                    className="h-11 w-full"
+                                                    {...field}
+                                                  />
+                                                </FormControl>
+                                              </div>
+                                              <div className="w-full sm:w-32">
+                                                <FormField
+                                                  control={form.control}
+                                                  name={`subproducts.${idx}.discount_price`}
+                                                  render={({ field: subDiscountField }) => (
+                                                    <FormItem>
+                                                      <FormControl>
+                                                        <Input
+                                                          type="number"
+                                                          step="0.01"
+                                                          min="0.01"
+                                                          className="h-11 w-full"
+                                                          value={subDiscountField.value || ''}
+                                                          onChange={(e) => {
+                                                            subDiscountField.onChange(
+                                                              e.target.value,
+                                                            );
+                                                          }}
+                                                          placeholder="0.00"
+                                                        />
+                                                      </FormControl>
+                                                      <FormMessage />
+                                                    </FormItem>
+                                                  )}
+                                                />
+                                              </div>
+                                            </div>
                                           </FormItem>
                                         )}
                                       />

@@ -300,7 +300,7 @@ export default function DeliverySettings({
                       <div>
                         <Button
                           onClick={handleSaveDeliverySettings}
-                          disabled={loading || bot?.tariff?.is_default}
+                          disabled={loading || !bot?.can_manage_delivery}
                           className="h-11 px-8 flex items-center gap-2"
                         >
                           <Save className="w-4 h-4" />
@@ -308,7 +308,7 @@ export default function DeliverySettings({
                         </Button>
                       </div>
                     </TooltipTrigger>
-                    {bot?.tariff?.is_default && (
+                    {bot?.tariff?.is_default && !bot?.can_manage_delivery && (
                       <TooltipContent>
                         <p>Для настройки доставки необходимо повысить тариф</p>
                       </TooltipContent>
