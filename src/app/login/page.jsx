@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -6,15 +7,22 @@ import { telegramAuth } from '@/lib/api';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const isSessionSaved = !!window.TelegramLogin;
   const [loading, setLoading] = React.useState(false);
+  const [widgetCreated, setWidgetCreated] = React.useState(false);
 
+  // Создаем виджет только один раз
   useEffect(() => {
+    // Проверяем, что мы в браузере
+    if (typeof window === 'undefined') return;
+
     window.onTelegramAuth = async function (data, webApp = false) {
       try {
         setLoading(true);
         const response = await telegramAuth(data, webApp);
-        localStorage.setItem('access_token', response.access_token);
+        if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+          // eslint-disable-next-line no-undef
+          localStorage.setItem('access_token', response.access_token);
+        }
         toast.success('Добро пожаловать в Botly!');
         navigate('/');
       } catch (error) {
@@ -24,65 +32,90 @@ export default function LoginPage() {
         setLoading(false);
       }
     };
-    if (localStorage.getItem('access_token')) {
+
+    if (
+      typeof window !== 'undefined' &&
+      typeof localStorage !== 'undefined' &&
+      localStorage.getItem('access_token')
+    ) {
       window.location.href = '/';
+      return;
     }
 
-    const tg = window.Telegram.WebApp;
+    const tg = typeof window !== 'undefined' ? window.Telegram?.WebApp : null;
 
     if (tg?.initData) {
       window.onTelegramAuth({ init_data: tg.initData }, true);
-    } else {
+    } else if (typeof document !== 'undefined' && !widgetCreated) {
       const script = document.createElement('script');
       script.src = 'https://telegram.org/js/telegram-widget.js?7';
-      // script.setAttribute('data-telegram-login', import.meta.env.VITE_TELEGRAM_BOT_NAME);
-      script.setAttribute('data-telegram-login', 'botly_bbot');
+      script.setAttribute('data-telegram-login', import.meta.env.VITE_TELEGRAM_BOT_NAME);
       script.setAttribute('data-size', 'large');
       script.setAttribute('data-userpic', 'true');
       script.setAttribute('data-request-access', 'write');
       script.setAttribute('data-onauth', 'onTelegramAuth(user)');
-      // script.async = true;
 
       const container = document.getElementById('telegram-widget-container');
-      // if (container) {
-      container.innerHTML = '';
-      container.appendChild(script);
-      if (isSessionSaved) {
-        //
+      if (container) {
+        container.innerHTML = '';
+        container.appendChild(script);
+        setWidgetCreated(true);
       }
-      // }
     }
 
+    // eslint-disable-next-line consistent-return
     return () => {
-      delete window.onTelegramAuth;
+      if (typeof window !== 'undefined') {
+        delete window.onTelegramAuth;
+      }
     };
-  }, [navigate]);
+  }, [navigate]); // Убрал loading из зависимостей
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 bg-background">
-      <Card className="w-full max-w-xl custom-card">
-        <CardHeader className="text-center">
-          <h1 className="text-3xl font-semibold mb-2 drop-shadow-sm bg-sidebar">Вход в Botly</h1>
-          <p className="text-muted-foreground drop-shadow-sm">
-            Ваш Telegram-магазин — легко и быстро
-          </p>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center">
-          <p className="text-center text-muted-foreground mb-6 drop-shadow-sm">
-            Войдите через Telegram и начните управлять своим магазином.
-          </p>
-          {loading && (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+    <div className="min-h-screen bg-background">
+      {/* Логотип и название сверху */}
+      <div className="flex items-center justify-center pt-12 pb-16">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center p-2">
+            <img src="/botly.ico" alt="Botly" className="w-full h-full object-contain" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground">Botly</h1>
+        </div>
+      </div>
+
+      {/* Вертикальная карточка входа */}
+      <div className="flex justify-center px-4">
+        <Card className="w-full max-w-md custom-card">
+          <CardContent className="p-8">
+            {/* Заголовок */}
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Вход в систему</h2>
+              <p className="text-muted-foreground">Управление Telegram-магазином</p>
             </div>
-          )}
-          <div
-            id="telegram-widget-container"
-            className="flex justify-center"
-            style={{ display: `${loading ? 'none' : 'block'}` }}
-          />
-        </CardContent>
-      </Card>
+
+            {/* Кнопка входа */}
+            <div className="space-y-6 relative">
+              {/* Лоадер поверх виджета */}
+              {loading && (
+                <div className="absolute inset-0 bg-background/95 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-sidebar-primary border-t-transparent mr-3" />
+                    <span className="text-muted-foreground">Вход...</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Контейнер всегда существует */}
+              <div className="space-y-6">
+                <div id="telegram-widget-container" className="flex justify-center" />
+                <p className="text-sm text-muted-foreground text-center">
+                  Войдите через аккаунт Telegram
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
