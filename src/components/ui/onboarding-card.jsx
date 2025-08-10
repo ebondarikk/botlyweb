@@ -16,7 +16,7 @@ export default function OnboardingCard({
   const getVariantStyles = () => {
     switch (variant) {
       case 'success':
-        return 'border-green-200 bg-green-50/50';
+        return 'border-sidebar-primary/20 bg-sidebar-primary/5';
       case 'info':
         return 'border-blue-200 bg-blue-50/50';
       default:
@@ -41,13 +41,13 @@ export default function OnboardingCard({
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-4 flex-1">
             {/* Иконка */}
-            <div className={`p-3 rounded-xl bg-white/80 ${getIconColor()}`}>{icon}</div>
+            <div className={`p-3 rounded-xl ${getIconColor()}`}>{icon}</div>
 
             {/* Контент */}
             <div className="flex-1 space-y-3">
               <div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{description}</p>
+                <div className="text-muted-foreground leading-relaxed">{description}</div>
               </div>
 
               {/* Кнопка действия */}

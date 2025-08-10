@@ -13,6 +13,8 @@ export default function TariffDialog({
   currentTariffId,
   onSelect,
   nextPaymentAt,
+  preselectTariffId,
+  trialDays,
 }) {
   const [selectedTariffId, setSelectedTariffId] = useState(null);
   const [step, setStep] = useState('select'); // 'select' or 'confirm'
@@ -101,6 +103,14 @@ export default function TariffDialog({
     const Icon = theme?.icon || Package;
     return <Icon />;
   };
+
+  // Preselect tariff and open confirm when requested
+  React.useEffect(() => {
+    if (isOpen && preselectTariffId && step === 'select' && !selectedTariffId) {
+      setSelectedTariffId(preselectTariffId);
+      setStep('confirm');
+    }
+  }, [isOpen, preselectTariffId, step, selectedTariffId]);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -252,6 +262,7 @@ export default function TariffDialog({
                   nextPaymentAt={nextPaymentAt}
                   onConfirm={handleConfirm}
                   embedded
+                  trialDays={trialDays}
                 />
               </div>
             </motion.div>

@@ -41,6 +41,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { ORDER_STATUSES } from '@/lib/utils';
 import { TARIFF_THEMES } from '@/lib/constants/tariffs';
 import BotLayout from './layout';
+import OnboardingCard from '@/components/ui/onboarding-card';
+import { getGoals } from '@/lib/api';
+import { Rocket, CheckCircle2, Gift } from 'lucide-react';
 
 // Функция для форматирования даты
 const formatDate = (dateString) => {
@@ -104,6 +107,10 @@ function BotPage() {
   const [currency, setCurrency] = useState('');
   const [welcomeText, setWelcomeText] = useState('');
   const [saving, setSaving] = useState(false);
+  const [goals, setGoals] = useState([]);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [completeGoals, setCompleteGoals] = useState(null);
+  const [hasDiscount, setHasDiscount] = useState(false);
 
   useEffect(() => {
     if (!loading && bot) {
@@ -111,6 +118,30 @@ function BotPage() {
       setWelcomeText(bot?.welcome_text);
     }
   }, [bot, loading]);
+
+  useEffect(() => {
+    let ignore = false;
+    async function loadGoals() {
+      if (!bot?.id) return;
+      try {
+        const data = await getGoals(bot.id);
+        if (!ignore) {
+          const filtered = data?.goals || [];
+          setGoals(filtered);
+          setCompleteGoals(data?.complete_goals ?? null);
+          setHasDiscount(Boolean(data?.has_discount));
+          const done = filtered.filter((g) => g.completed).length;
+          setShowWelcome(!data?.has_discount && filtered.length > 0 && done < filtered.length);
+        }
+      } catch (e) {
+        // no-op
+      }
+    }
+    loadGoals();
+    return () => {
+      ignore = true;
+    };
+  }, [bot?.id]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -167,6 +198,82 @@ function BotPage() {
   return (
     <BotLayout>
       <div className="w-full">
+        {/* Секция поздравления и предложения (если доступен бонус) */}
+        {!loading && hasDiscount && (
+          <div className="mb-4">
+            <OnboardingCard
+              variant="success"
+              icon={<Gift className="w-5 h-5" />}
+              title="Поздравляем! Онбординг пройден"
+              description={
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Доступно специальное предложение: 14 дней тарифа «Стандарт» без оплаты.
+                  </p>
+                </div>
+              }
+              actionText="Активировать"
+              onAction={() => {
+                // Открываем модалку смены тарифа и заранее выберем Стандарт
+                window.location.href = `/${bot?.id}/subscription?open=tariff&select=standard&trial=14`;
+              }}
+            />
+          </div>
+        )}
+
+        {/* Экран приветствия/онбординг */}
+        {!loading && showWelcome && (
+          <div className="mb-4">
+            <OnboardingCard
+              icon={<Rocket className="w-5 h-5" />}
+              title="Давайте запустим ваш магазин!"
+              description={
+                <div className="space-y-3">
+                  <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-primary/30 bg-primary/10 text-primary text-sm font-medium">
+                    <Gift className="w-4 h-4" />
+                    Подарок: 14 дней тарифа «Стандарт» без оплаты
+                  </div>
+                  <p className="text-xs text-muted-foreground">Выполните эти шаги в течение 3 дней</p>
+                  {(goals || []).map((g) => (
+                    <div key={g.id} className="flex items-center gap-2 text-sm">
+                      <span
+                        className={`inline-flex items-center justify-center w-5 h-5 rounded-full border ${
+                          g.completed
+                            ? 'border-primary/40 bg-primary/10 text-primary'
+                            : 'border-border text-muted-foreground'
+                        }`}
+                      >
+                        {g.completed && <CheckCircle2 className="w-3.5 h-3.5" />}
+                      </span>
+                      <span>
+                        {g.id === 'add_products' && `Добавьте товары (${Math.min(g.current || 0, g.target || 3)}/${g.target || 3})`}
+                        {g.id === 'add_categories' && `Добавьте категории (${Math.min(g.current || 0, g.target || 2)}/${g.target || 2})`}
+                        {g.id === 'setup_delivery' && 'Настройте доставку'}
+                        {g.id === 'share_link' && 'Опубликуйте ссылку'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              }
+              actionText="Начать"
+              onAction={() => {
+                // ведем на первый невыполненный шаг
+                const first = (goals || []).find((g) => !g.completed);
+                if (!first) return;
+                const url =
+                  first.id === 'add_products'
+                    ? `/${bot?.id}/products`
+                    : first.id === 'add_categories'
+                    ? `/${bot?.id}/categories`
+                    : first.id === 'setup_delivery'
+                    ? `/${bot?.id}/settings`
+                    : `/${bot?.id}`;
+                window.location.href = url;
+              }}
+              onDismiss={() => setShowWelcome(false)}
+            />
+          </div>
+        )}
         {/* Информация о боте */}
         <Card className="border-none shadow-none">
           <CardHeader className="flex flex-row items-center justify-between gap-4 px-2 pt-6 pb-8">

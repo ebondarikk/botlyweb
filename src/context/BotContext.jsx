@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { getBotDetail } from '@/lib/api';
+import { getBotDetail, getBots } from '@/lib/api';
 
 const BotContext = createContext(null);
 
@@ -29,6 +29,16 @@ export function BotProvider({ children }) {
       }
       try {
         setLoading(true);
+        // Гарантируем, что список ботов есть в storage при прямом заходе по /:bot_id
+        const botsJson = localStorage.getItem('bots');
+        if (!botsJson) {
+          try {
+            const data = await getBots();
+            localStorage.setItem('bots', JSON.stringify(data.bots || []));
+          } catch (e) {
+            // игнорируем 401 — обработается глобально
+          }
+        }
         const data = await getBotDetail(bot_id);
         setBot(data);
       } catch (error) {

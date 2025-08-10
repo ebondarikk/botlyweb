@@ -43,6 +43,8 @@ import { UserProvider, useUser } from '@/context/UserContext';
 import { BotSwitcher } from '@/app/bot/bot-switcher';
 import { useBot } from '@/context/BotContext';
 import { NavLink } from 'react-router-dom';
+import { getBots } from '@/lib/api';
+import { toast } from 'react-hot-toast';
 import Header from './header';
 
 const items = [
@@ -120,10 +122,21 @@ function BotLayoutContent({ children }) {
 
   useEffect(() => {
     const botsJson = localStorage.getItem('bots');
-
-    const parsedBots = JSON.parse(botsJson);
-
-    setBots(parsedBots);
+    const parsedBots = botsJson ? JSON.parse(botsJson) : null;
+    if (Array.isArray(parsedBots) && parsedBots.length) {
+      setBots(parsedBots);
+    } else {
+      (async () => {
+        try {
+          const data = await getBots();
+          setBots(data.bots || []);
+          localStorage.setItem('bots', JSON.stringify(data.bots || []));
+        } catch (e) {
+          // подавим тост при 401 — редирект произойдёт в apiRequest
+          if (e?.status !== 401) toast.error('Не удалось загрузить список магазинов');
+        }
+      })();
+    }
   }, []);
 
   useEffect(() => {

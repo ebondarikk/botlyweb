@@ -3,12 +3,40 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { telegramAuth } from '@/lib/api';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { telegramAuth, updateMe } from '@/lib/api';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = React.useState(false);
   const [widgetCreated, setWidgetCreated] = React.useState(false);
+  const [emailDialogOpen, setEmailDialogOpen] = React.useState(false);
+  const [emailInput, setEmailInput] = React.useState('');
+  const [savingEmail, setSavingEmail] = React.useState(false);
+  const [pendingUserId, setPendingUserId] = React.useState(null);
+  const isEmailValid = React.useMemo(() => {
+    if (!emailInput) return false;
+    // Простая валидация email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    return emailRegex.test(emailInput.trim());
+  }, [emailInput]);
+
+  const handleSaveEmail = async () => {
+    if (!isEmailValid || savingEmail) return;
+    try {
+      setSavingEmail(true);
+      await updateMe({ id: pendingUserId, email: emailInput.trim() });
+      toast.success('Email сохранён');
+      setEmailDialogOpen(false);
+      navigate('/');
+    } catch (e) {
+      toast.error('Не удалось сохранить email');
+    } finally {
+      setSavingEmail(false);
+    }
+  };
 
   // Создаем виджет только один раз
   useEffect(() => {
@@ -23,8 +51,16 @@ export default function LoginPage() {
           // eslint-disable-next-line no-undef
           localStorage.setItem('access_token', response.access_token);
         }
-        toast.success('Добро пожаловать в Botly!');
-        navigate('/');
+        const userHasEmail = Boolean(response?.user?.email);
+        const userId = response?.user?.id;
+
+        if (!userHasEmail && userId) {
+          setPendingUserId(userId);
+          setEmailDialogOpen(true);
+        } else {
+          toast.success('Добро пожаловать в Botly!');
+          navigate('/');
+        }
       } catch (error) {
         toast.error('Не удалось войти через Telegram');
         console.error('Ошибка Telegram auth:', error);
@@ -50,6 +86,7 @@ export default function LoginPage() {
       const script = document.createElement('script');
       script.src = 'https://telegram.org/js/telegram-widget.js?7';
       script.setAttribute('data-telegram-login', import.meta.env.VITE_TELEGRAM_BOT_NAME);
+      // script.setAttribute('data-telegram-login', 'botly_bbot');
       script.setAttribute('data-size', 'large');
       script.setAttribute('data-userpic', 'true');
       script.setAttribute('data-request-access', 'write');
@@ -116,6 +153,46 @@ export default function LoginPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={emailDialogOpen} onOpenChange={(open) => {
+        // Запрещаем закрытие, пока не сохраним email
+        if (open) setEmailDialogOpen(true);
+      }}>
+        <DialogContent hideClose>
+          <DialogHeader>
+            <DialogTitle>Укажите ваш email</DialogTitle>
+            <DialogDescription>
+              Для связи и квитанций укажите адрес электронной почты.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Input
+              type="email"
+              placeholder="you@example.com"
+              value={emailInput}
+              onChange={(e) => setEmailInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSaveEmail();
+                }
+              }}
+              className={!isEmailValid && emailInput ? 'border-destructive focus-visible:ring-destructive' : ''}
+            />
+            {!isEmailValid && emailInput && (
+              <p className="text-sm text-destructive">Введите корректный адрес электронной почты</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              disabled={savingEmail || !isEmailValid}
+              onClick={handleSaveEmail}
+            >
+              {savingEmail ? 'Сохранение…' : 'Сохранить и продолжить'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

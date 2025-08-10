@@ -1,7 +1,7 @@
 import { toast } from 'react-hot-toast';
 
-// const BASE_URL = import.meta.env.VITE_API_URL;
-const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
+const BASE_URL = import.meta.env.VITE_API_URL;
+// const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
 
 /**
  * Функция-обёртка для API-запросов.
@@ -98,6 +98,40 @@ export async function telegramAuth(telegramAuthData, webApp = false) {
 }
 
 /**
+ * Обновление данных текущего пользователя
+ *
+ * OpenAPI: PUT /auth/me
+ * Схема запроса: { email?: string }
+ * Схема ответа: TelegramAuth
+ *
+ * @param {object} data - Данные для обновления (например, { email })
+ */
+export async function updateMe(data) {
+  return apiRequest('/auth/me', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Получение данных текущего пользователя
+ *
+ * OpenAPI: GET /auth/me
+ * Схема ответа: TelegramAuth
+ */
+export async function getMe() {
+  return apiRequest('/auth/me', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+/**
  * Получение списка ботов.
  *
  * OpenAPI: GET /bots/
@@ -142,6 +176,15 @@ export async function createBot(botData) {
 export async function getBotDetail(botId) {
   return apiRequest(`/bots/${botId}`, {
     method: 'GET',
+  });
+}
+
+export async function getGoals(botId) {
+  return apiRequest(`/bots/${botId}/goals/`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
   });
 }
 
@@ -571,10 +614,10 @@ export async function updateSubscriptionEmail(botId, email) {
   });
 }
 
-export async function updateSubscription(botId, tariffId) {
+export async function updateSubscription(botId, tariffId, options) {
   return apiRequest(`/bots/${botId}/subscriptions/`, {
     method: 'POST',
-    body: JSON.stringify({ tariff_id: tariffId }),
+    body: JSON.stringify({ tariff_id: tariffId, ...(options || {}) }),
     headers: {
       'Content-Type': 'application/json',
     },

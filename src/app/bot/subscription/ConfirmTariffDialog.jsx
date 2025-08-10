@@ -15,6 +15,7 @@ export default function ConfirmTariffDialog({
   nextPaymentAt,
   onConfirm,
   embedded = false,
+  trialDays = null,
 }) {
   const [isUpgrade, setIsUpgrade] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -123,12 +124,17 @@ export default function ConfirmTariffDialog({
             <div
               className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity ${selectedTheme.colors.medium}`}
             />
-            <p className="text-sm leading-relaxed">
-              При повышении тарифа оплата будет произведена сейчас. Сумма к оплате:{' '}
-              <span className={`font-bold ${selectedTheme.colors.iconColor}`}>
-                {selectedTariff?.price} BYN
-              </span>
-            </p>
+            {trialDays ? (
+              <p className="text-sm leading-relaxed">
+                Для вас действует специальное предложение: {trialDays} дней тарифа «Стандарт» без оплаты. После триала — списание{' '}
+                <span className={`font-bold ${selectedTheme.colors.iconColor}`}>{selectedTariff?.price} BYN/мес</span>.
+              </p>
+            ) : (
+              <p className="text-sm leading-relaxed">
+                При повышении тарифа оплата будет произведена сейчас. Сумма к оплате:{' '}
+                <span className={`font-bold ${selectedTheme.colors.iconColor}`}>{selectedTariff?.price} BYN</span>.
+              </p>
+            )}
           </div>
         ) : (
           <div className="rounded-xl custom-card p-6 flex items-start gap-4">

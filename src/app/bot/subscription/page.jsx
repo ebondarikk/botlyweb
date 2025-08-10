@@ -96,6 +96,9 @@ export function SubscriptionPage() {
   const [isCancelling, setIsCancelling] = useState(false);
   const [tariffs, setTariffs] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [preselectStandard, setPreselectStandard] = useState(false);
+  const [trialDays, setTrialDays] = useState(null);
+  const [standardTariffId, setStandardTariffId] = useState(null);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [billingEmail, setBillingEmail] = useState('');
   const [isSavingEmail, setIsSavingEmail] = useState(false);
@@ -165,6 +168,8 @@ export function SubscriptionPage() {
     try {
       const response = await getTariffs();
       setTariffs(response.tariffs);
+      const standard = (response.tariffs || []).find((t) => t.name?.toLowerCase?.() === 'стандарт' || t.sort === 2);
+      if (standard) setStandardTariffId(standard.id);
     } catch (error) {
       console.error(error);
       toast.error('Не удалось загрузить список тарифов');
@@ -241,9 +246,22 @@ export function SubscriptionPage() {
     }
   }, [subscription, tariffs]);
 
+  useEffect(() => {
+    // Открытие модалки и предвыбор тарифа через query (?open=tariff&select=standard&trial=14)
+    const open = searchParams.get('open');
+    const select = searchParams.get('select');
+    const trial = parseInt(searchParams.get('trial') || '', 10);
+    if (open === 'tariff') {
+      setIsDialogOpen(true);
+      if (select === 'standard') setPreselectStandard(true);
+      if (!Number.isNaN(trial)) setTrialDays(trial);
+      // очищать URL не будем, чтобы вернувшись пользователь мог повторно открыть
+    }
+  }, [searchParams]);
+
   const handleTariffSelect = async (tariffId) => {
     try {
-      const response = await updateSubscription(bot.id, tariffId);
+      const response = await updateSubscription(bot.id, tariffId, trialDays ? { trial: trialDays } : undefined);
 
       if (response.payment_url) {
         window.location.href = response.payment_url;
@@ -765,6 +783,8 @@ export function SubscriptionPage() {
           currentTariffId={subscription?.tariff?.id}
           onSelect={handleTariffSelect}
           nextPaymentAt={activeTo}
+          preselectTariffId={preselectStandard ? standardTariffId : null}
+          trialDays={trialDays}
         />
       </motion.div>
     </BotLayout>
