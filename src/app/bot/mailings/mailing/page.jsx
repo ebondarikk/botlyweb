@@ -573,6 +573,8 @@ export default function MailingFormPage() {
     }
   };
 
+  const canPublish = !(bot?.mailings_limit !== null && bot?.mailings_limit <= 0);
+
   return (
     <BotLayout>
       <motion.div
@@ -768,7 +770,7 @@ export default function MailingFormPage() {
                                     disabled={
                                       publishing ||
                                       formChanged ||
-                                      (bot?.mailings_limit !== null && bot?.mailings_limit <= 0)
+                                      !canPublish
                                     }
                                   >
                                     <Send className="w-4 h-4" />
@@ -787,7 +789,7 @@ export default function MailingFormPage() {
                                 <TooltipContent side="left" sideOffset={20}>
                                   <p>Сохраните изменения перед публикацией</p>
                                 </TooltipContent>
-                              ) : bot?.mailings_limit !== null && bot?.mailings_limit <= 0 ? (
+                              ) : !canPublish ? (
                                 <TooltipContent side="left" sideOffset={20}>
                                   <p>
                                     Лимит рассылок исчерпан. Для публикации новых рассылок

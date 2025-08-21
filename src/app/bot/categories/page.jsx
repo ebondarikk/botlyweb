@@ -178,6 +178,8 @@ export default function CategoriesList() {
     }
   };
 
+  const canAddCategory = !(bot?.categories_limit !== null && bot?.categories_limit <= 0);
+
   return (
     <BotLayout>
       <motion.div
@@ -222,22 +224,20 @@ export default function CategoriesList() {
                 <div>
                   <Button
                     asChild
-                    disabled={
-                      (bot?.categories_limit !== null && bot?.categories_limit <= 0) || isReordering
-                    }
+                    disabled={!canAddCategory || isReordering}
                     className={`transition-all duration-200 ${
-                      (bot?.categories_limit !== null && bot?.categories_limit <= 0) || isReordering
-                        ? 'bg-muted cursor-not-allowed opacity-60'
+                      !canAddCategory || isReordering
+                        ? 'cursor-not-allowed opacity-60'
                         : 'bg-primary hover:bg-primary/90'
                     }`}
                   >
                     <Link
                       to={
-                        bot?.categories_limit !== null && bot?.categories_limit <= 0 ? '#' : 'add'
+                        canAddCategory ? 'add' : ''
                       }
                       className="flex items-center gap-2"
                       onClick={(e) => {
-                        if (bot?.categories_limit !== null && bot?.categories_limit <= 0) {
+                        if (!canAddCategory) {
                           e.preventDefault();
                         }
                       }}
@@ -248,7 +248,7 @@ export default function CategoriesList() {
                   </Button>
                 </div>
               </TooltipTrigger>
-              {bot?.categories_limit !== null && bot?.categories_limit <= 0 && (
+              {!canAddCategory && (
                 <TooltipContent>
                   <p>
                     Лимит категорий исчерпан. Для добавления новых категорий необходимо повысить

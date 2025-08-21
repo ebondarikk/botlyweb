@@ -120,6 +120,8 @@ export default function ProductList() {
     },
   };
 
+  const canAddProduct = !(bot?.products_limit !== null && bot?.products_limit <= 0);
+
   return (
     <BotLayout>
       <motion.div
@@ -246,17 +248,17 @@ export default function ProductList() {
                   <Button
                     asChild
                     className={`transition-all duration-200 ${
-                      bot?.products_limit !== null && bot?.products_limit <= 0
-                        ? 'bg-muted cursor-not-allowed opacity-60'
+                      !canAddProduct
+                        ? 'cursor-not-allowed opacity-60'
                         : 'bg-primary hover:bg-primary/90'
                     }`}
-                    disabled={bot?.products_limit !== null && bot?.products_limit <= 0}
+                    disabled={!canAddProduct}
                   >
                     <Link
-                      to={bot?.products_limit !== null && bot?.products_limit <= 0 ? '#' : 'add'}
+                      to={canAddProduct ? 'add' : ''}
                       className="flex items-center gap-2"
                       onClick={(e) => {
-                        if (bot?.products_limit !== null && bot?.products_limit <= 0) {
+                        if (!canAddProduct) {
                           e.preventDefault();
                         }
                       }}
@@ -267,7 +269,7 @@ export default function ProductList() {
                   </Button>
                 </div>
               </TooltipTrigger>
-              {bot?.products_limit !== null && bot?.products_limit <= 0 && (
+              {!canAddProduct && (
                 <TooltipContent>
                   <p>
                     Лимит товаров исчерпан. Для добавления новых товаров необходимо повысить тариф.

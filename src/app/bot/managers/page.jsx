@@ -79,6 +79,8 @@ export default function ManagersList() {
     [updateManager],
   );
 
+  const canAddManager = !(bot?.managers_limit !== null && bot?.managers_limit <= 0);
+
   return (
     <BotLayout>
       <motion.div
@@ -155,16 +157,16 @@ export default function ManagersList() {
                   <Button
                     asChild
                     className={`transition-all duration-200 ${
-                      bot?.managers_limit !== null && bot?.managers_limit <= 0
-                        ? 'bg-muted cursor-not-allowed opacity-60'
+                      !canAddManager
+                        ? 'cursor-not-allowed opacity-60'
                         : 'bg-primary hover:bg-primary/90'
                     }`}
-                    disabled={bot?.managers_limit !== null && bot?.managers_limit <= 0}
+                    disabled={!canAddManager}
                   >
                     <Link
-                      to="add"
+                      to={canAddManager ? 'add' : ''}
                       className="flex items-center gap-2"
-                      disabled={bot?.managers_limit !== null && bot?.managers_limit <= 0}
+                      disabled={!canAddManager}
                     >
                       <Plus className="w-4 h-4" />
                       Добавить менеджера
@@ -172,7 +174,7 @@ export default function ManagersList() {
                   </Button>
                 </div>
               </TooltipTrigger>
-              {bot?.managers_limit !== null && bot?.managers_limit <= 0 && (
+              {!canAddManager && (
                 <TooltipContent>
                   <p>
                     Лимит менеджеров исчерпан. Для добавления новых менеджеров необходимо повысить
