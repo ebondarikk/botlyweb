@@ -16,19 +16,22 @@ export default function SettingsPage() {
   const { bot } = useBot();
   const [deliverySettings, setDeliverySettings] = useState({});
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [openAccordion, setOpenAccordion] = useState('delivery');
   const navigate = useNavigate();
 
   const fetchDeliverySettings = async () => {
     try {
+      setInitialLoading(true);
       const data = await getDeliverySettings(bot.id);
       setDeliverySettings({
-        ...data,
-        min_check: data.min_check ? Number(Number(data.min_check).toFixed(2)) : null,
-        cost: data.cost ? Number(Number(data.cost).toFixed(2)) : null,
+        is_active: data.is_active || false,
+        zones: data.zones || [],
       });
     } catch (error) {
       toast.error('Ошибка при загрузке настроек доставки');
+    } finally {
+      setInitialLoading(false);
     }
   };
 
@@ -98,6 +101,7 @@ export default function SettingsPage() {
             setDeliverySettings={setDeliverySettings}
             loading={loading}
             setLoading={setLoading}
+            initialLoading={initialLoading}
             openAccordion={openAccordion}
             setOpenAccordion={setOpenAccordion}
           />

@@ -21,6 +21,7 @@ import BillingPage from './app/billing/page';
 import SubscriptionPage from './app/bot/subscription/page';
 import TagsList from './app/bot/tags/page';
 import TagFormPage from './app/bot/tags/tag/page';
+import IntegrationsPage from './app/bot/integrations/page';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -188,6 +189,14 @@ function App() {
             element={
               <BotProvider>
                 <TagFormPage />
+              </BotProvider>
+            }
+          />
+          <Route
+            path="/:bot_id/integrations"
+            element={
+              <BotProvider>
+                <IntegrationsPage />
               </BotProvider>
             }
           />

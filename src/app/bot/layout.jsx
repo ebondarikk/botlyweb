@@ -38,6 +38,7 @@ import {
   LogOut,
   Tag,
   BriefcaseBusiness,
+  Link,
 } from 'lucide-react';
 import { UserProvider, useUser } from '@/context/UserContext';
 import { BotSwitcher } from '@/app/bot/bot-switcher';
@@ -101,6 +102,11 @@ const items = [
     url: (bot_id) => `/${bot_id}/subscription`,
     icon: CreditCard,
   },
+  // {
+  //   name: 'Интеграции',
+  //   url: (bot_id) => `/${bot_id}/integrations`,
+  //   icon: Link,
+  // },
 ];
 
 export default function BotLayout({ children }) {

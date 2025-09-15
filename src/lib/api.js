@@ -1,7 +1,7 @@
 import { toast } from 'react-hot-toast';
 
-// const BASE_URL = import.meta.env.VITE_API_URL;
-const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
+const BASE_URL = import.meta.env.VITE_API_URL;
+// const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
 
 /**
  * Функция-обёртка для API-запросов.
@@ -679,5 +679,33 @@ export async function updateTags(botId, data) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ tags: data }),
+  });
+}
+
+export async function getIntegrations(botId) {
+  return apiRequest(`/bots/${botId}/integrations/`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+export async function connectQuickResto(botId, data) {
+  return apiRequest(`/bots/${botId}/integrations/quickresto/connect`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function disconnectQuickResto(botId) {
+  return apiRequest(`/bots/${botId}/integrations/quickresto/disconnect`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
   });
 }
