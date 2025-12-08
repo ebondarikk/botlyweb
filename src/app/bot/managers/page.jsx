@@ -231,69 +231,70 @@ export default function ManagersList() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
-                    <Link to={`/${bot.id}/managers/${manager.id}`}>
-                      <Card className="overflow-hidden custom-card border-border/50 hover:border-primary/50 transition-all duration-300 group hover:bg-muted/30">
-                        <CardContent className="p-4">
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                              <div
-                                className={`p-2 rounded-lg shrink-0 ${manager.is_active ? 'bg-primary/10' : 'bg-muted'}`}
-                              >
-                                <User
-                                  className={`w-5 h-5 ${manager.is_active ? 'text-primary' : 'text-muted-foreground'}`}
-                                />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-3 mb-1 flex-wrap">
-                                  <span className="font-medium text-base group-hover:text-primary transition-colors truncate">
-                                    {manager.first_name}
-                                  </span>
-                                  {manager.is_admin && (
-                                    <Badge
-                                      variant="default"
-                                      className="flex items-center gap-1.5 bg-primary/10 text-primary border-none shrink-0"
-                                    >
-                                      <Shield className="w-3.5 h-3.5" />
-                                      <span className="truncate">Администратор</span>
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
-                                  <div className="flex items-center gap-1.5 shrink-0">
-                                    <Hash className="w-3.5 h-3.5" />
-                                    <span>{manager.id}</span>
-                                  </div>
-                                  {manager.username && (
-                                    <>
-                                      <span className="w-1 h-1 rounded-full bg-border shrink-0" />
-                                      <a
-                                        href={`https://t.me/${manager.username}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="hover:underline"
-                                      >
-                                        @{manager.username}
-                                      </a>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Switch
-                                id={`active-${manager.id}`}
-                                checked={manager.is_active}
-                                onCheckedChange={(isActive) =>
-                                  handleActiveToggle(manager.id, isActive)
-                                }
-                                disabled={loadingManagerId === manager.id}
+                    <Card className="overflow-hidden custom-card border-border/50 hover:border-primary/50 transition-all duration-300 group hover:bg-muted/30">
+                      <CardContent className="p-4">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                          <Link to={`/${bot.id}/managers/${manager.id}`} className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
+                            <div
+                              className={`p-2 rounded-lg shrink-0 ${manager.is_active ? 'bg-primary/10' : 'bg-muted'}`}
+                            >
+                              <User
+                                className={`w-5 h-5 ${manager.is_active ? 'text-primary' : 'text-muted-foreground'}`}
                               />
-                              <ChevronRight className="w-4 h-4 text-muted-foreground" />
                             </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-3 mb-1 flex-wrap">
+                                <span className="font-medium text-base group-hover:text-primary transition-colors truncate">
+                                  {manager.first_name}
+                                </span>
+                                {manager.is_admin && (
+                                  <Badge
+                                    variant="default"
+                                    className="flex items-center gap-1.5 bg-primary/10 text-primary border-none shrink-0"
+                                  >
+                                    <Shield className="w-3.5 h-3.5" />
+                                    <span className="truncate">Администратор</span>
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <Hash className="w-3.5 h-3.5" />
+                                  <span>{manager.id}</span>
+                                </div>
+                                {manager.username && (
+                                  <>
+                                    <span className="w-1 h-1 rounded-full bg-border shrink-0" />
+                                    <a
+                                      href={`https://t.me/${manager.username}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="hover:underline"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      @{manager.username}
+                                    </a>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </Link>
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              id={`active-${manager.id}`}
+                              checked={manager.is_active}
+                              onCheckedChange={(isActive) =>
+                                handleActiveToggle(manager.id, isActive)
+                              }
+                              disabled={loadingManagerId === manager.id}
+                            />
+                            <Link to={`/${bot.id}/managers/${manager.id}`} className="cursor-pointer">
+                              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                            </Link>
                           </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </motion.div>
                 ))}
               </motion.div>
