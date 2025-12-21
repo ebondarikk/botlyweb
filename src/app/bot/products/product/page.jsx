@@ -165,7 +165,7 @@ function getDefaultValues(product) {
     price: product.price || '0.00',
     discount_price: product.discount_price || '',
     description: product.description || '',
-    category: product.category || '',
+    category: product.category?.name || '',
     grouped: typeof product.grouped !== 'undefined' ? product.grouped : false,
     frozen: product.frozen || false,
     warehouse: product.warehouse || false,
@@ -255,12 +255,10 @@ export default function ProductFormPage() {
     const productValues = getDefaultValues(existingProduct);
     // Корректируем категорию сразу в productValues
     const originalCategory = existingProduct.category;
-    if (originalCategory) {
-      // Ищем категорию в списке
+    if (originalCategory && originalCategory.name) {
+      // Ищем категорию в списке по ID или имени
       const foundCategory = categoriesWithEmpty.find((cat) => {
-        const catSelectValue =
-          cat.value && cat.value !== 'undefined' && cat.value !== 'null' ? cat.value : cat.name;
-        return catSelectValue === originalCategory || cat.name === originalCategory;
+        return cat.id === originalCategory.id || cat.name === originalCategory.name;
       });
 
       if (foundCategory) {
@@ -393,15 +391,32 @@ export default function ProductFormPage() {
     setSaving(true);
     try {
       const tags = selectedTags.map((t) => t.id);
-      if (existingProduct) {
-        const updatedProduct = await updateProduct(params.bot_id, existingProduct.id, {
-          ...data,
-          tags,
+      
+      // Находим category_id по имени категории
+      let category_id = null;
+      if (data.category && data.category !== '') {
+        const foundCategory = categories.find((cat) => {
+          const catSelectValue = cat.value && cat.value !== 'undefined' && cat.value !== 'null' ? cat.value : cat.name;
+          return catSelectValue === data.category;
         });
+        category_id = foundCategory ? foundCategory.id : null;
+      }
+      
+      const productData = {
+        ...data,
+        category_id,
+        tags,
+      };
+      
+      // Удаляем поле category, так как теперь используем category_id
+      delete productData.category;
+      
+      if (existingProduct) {
+        const updatedProduct = await updateProduct(params.bot_id, existingProduct.id, productData);
         setExistingProduct(updatedProduct);
         toast.success('Данные обновлены');
       } else {
-        const product = await createProduct(params.bot_id, { ...data, tags });
+        const product = await createProduct(params.bot_id, productData);
         navigate(`/${params.bot_id}/products/${product.id}`);
       }
     } catch (error) {
@@ -706,7 +721,7 @@ export default function ProductFormPage() {
                             } else if (tagOptions.length === 0) {
                               selectContent = (
                                 <div className="px-4 py-2 text-muted-foreground">
-                                  Нет доступных ярлыков
+                                  Нет доступных меток
                                 </div>
                               );
                             } else {
@@ -723,7 +738,7 @@ export default function ProductFormPage() {
                             return (
                               <FormItem>
                                 <div className="flex items-center gap-2 mb-1">
-                                  <FormLabel>Ярлыки</FormLabel>
+                                  <FormLabel>Метки</FormLabel>
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
@@ -732,10 +747,10 @@ export default function ProductFormPage() {
                                         </span>
                                       </TooltipTrigger>
                                       <TooltipContent side="right" className="max-w-xs text-sm">
-                                        Выделите товар цветным ярлыком (Акция, Скидка, Популярный
+                                        Выделите товар цветной меткой (Акция, Скидка, Популярный
                                         товар и так далее).
                                         <br />
-                                        Ярлыки можно менять местами, перетаскивая их.
+                                        Метки можно менять местами, перетаскивая их.
                                       </TooltipContent>
                                     </Tooltip>
                                   </TooltipProvider>
@@ -782,7 +797,7 @@ export default function ProductFormPage() {
                                     >
                                       <SelectValue
                                         placeholder={
-                                          tagsLoading ? 'Загрузка...' : 'Выберите ярлыки'
+                                          tagsLoading ? 'Загрузка...' : 'Выберите метки'
                                         }
                                       />
                                     </SelectTrigger>
@@ -790,7 +805,7 @@ export default function ProductFormPage() {
                                   </Select>
                                   {selectedTags.length >= 5 && (
                                     <div className="text-xs text-muted-foreground mt-1">
-                                      Можно выбрать не более 5 ярлыков
+                                      Можно выбрать не более 5 меток
                                     </div>
                                   )}
                                 </div>

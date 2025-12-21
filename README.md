@@ -1,8 +1,50 @@
-# React + Vite
+# Botly Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Веб-интерфейс для управления ботом Botly.
 
-Currently, two official plugins are available:
+## Установка
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+npm install
+```
+
+## Настройка
+
+### Google Maps API
+
+Для работы с зонами доставки необходимо настроить Google Maps API:
+
+1. Создайте файл `.env` в корне проекта
+2. Добавьте ваш API ключ:
+   ```
+   VITE_GOOGLE_MAPS_API_KEY=ваш_ключ_здесь
+   ```
+
+**Необходимые API:**
+- Maps JavaScript API
+- Places API (для автодополнения городов и районов)
+- Geocoding API
+
+Подробные инструкции по настройке см. в файле `SETUP.md`.
+
+## Запуск
+
+```bash
+npm run dev
+```
+
+## Сборка
+
+```bash
+npm run build
+```
+
+## Особенности
+
+- **Система доставки**: 
+  - Автоматический поиск городов и районов через Google Places API
+  - Создание зон доставки по городам с настраиваемым радиусом
+  - Ручное рисование полигонов для точных зон
+  - Автоматическое центрирование карты при выборе места
+- **Интеграции**: Поддержка различных платежных систем и сервисов
+- **Управление ботом**: Полный контроль над настройками и функциональностью

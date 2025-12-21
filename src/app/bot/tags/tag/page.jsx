@@ -158,10 +158,10 @@ export default function TagFormPage() {
     try {
       if (existingTag) {
         await updateTag(params.bot_id, params.tag_id, values);
-        toast.success('Ярлык успешно сохранен');
+        toast.success('Метка успешно сохранена');
       } else {
         await createTag(params.bot_id, values);
-        toast.success('Ярлык успешно создан');
+        toast.success('Метка успешно создана');
       }
       navigate(-1);
     } catch (error) {
@@ -175,7 +175,7 @@ export default function TagFormPage() {
     setDeleting(true);
     try {
       await deleteTag(params.bot_id, params.tag_id);
-      toast.success('Ярлык успешно удален');
+      toast.success('Метка успешно удалена');
       navigate(-1);
     } catch (error) {
       toast.error('Ошибка при удалении');
@@ -208,9 +208,9 @@ export default function TagFormPage() {
           </Button>
           <div>
             <h1 className="text-2xl font-semibold">
-              {existingTag ? 'Редактировать ярлык' : 'Добавить ярлык'}
+              {existingTag ? 'Редактировать метку' : 'Добавить метку'}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">Заполните информацию о ярлыке</p>
+            <p className="text-sm text-muted-foreground mt-1">Заполните информацию о метке</p>
           </div>
         </motion.div>
 
@@ -237,7 +237,7 @@ export default function TagFormPage() {
                         <CardHeader className="border-b bg-muted/40 px-6">
                           <div className="flex items-center gap-2">
                             <TagIcon className="w-5 h-5 text-primary" />
-                            <CardTitle className="text-base">Информация о ярлыке</CardTitle>
+                            <CardTitle className="text-base">Информация о метке</CardTitle>
                           </div>
                         </CardHeader>
                         <CardContent className="p-6">
@@ -322,17 +322,17 @@ export default function TagFormPage() {
                           className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive h-11 flex items-center gap-2"
                         >
                           <Trash2 className="w-4 h-4" />
-                          Удалить ярлык
+                          Удалить метку
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
                           <DialogTitle className="flex items-center gap-2">
                             <AlertTriangle className="w-5 h-5 text-destructive" />
-                            Удаление ярлыка
+                            Удаление метки
                           </DialogTitle>
                           <DialogDescription className="pt-2">
-                            Вы действительно хотите удалить этот ярлык? Это действие нельзя
+                            Вы действительно хотите удалить эту метку? Это действие нельзя
                             отменить.
                           </DialogDescription>
                         </DialogHeader>

@@ -50,6 +50,7 @@ import BotLayout from '@/app/bot/layout';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const sorting = [
+  { name: 'По умолчанию', value: 'default', icon: Package },
   { name: 'По названию', value: 'name', icon: Package },
   { name: 'По стоимости', value: 'price', icon: Package },
   { name: 'По кол-ву на складе', value: 'warehouse_count', icon: Package },
@@ -92,7 +93,7 @@ export default function ProductList() {
   } = useProducts(bot?.id, {
     initialPage: 1,
     initialLimit: 12,
-    initialOrderBy: 'name',
+    initialOrderBy: 'default',
     initialDesc: false,
   });
 
@@ -450,7 +451,7 @@ export default function ProductList() {
                           <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted">
                             <Tag className="w-4 h-4 text-muted-foreground" />
                             <span className="font-medium text-foreground/80">
-                              {product.category || 'Без категории'}
+                              {product.category?.name || 'Без категории'}
                             </span>
                           </div>
                         </div>

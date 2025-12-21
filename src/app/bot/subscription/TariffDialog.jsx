@@ -42,7 +42,7 @@ export default function TariffDialog({
     setSelectedTariffId(null);
   };
 
-  const formatLimit = (limit) => (limit === 0 ? '∞' : limit);
+  const formatLimit = (limit) => (limit === 0 || limit == null ? '∞' : limit);
 
   const getBorderClasses = (theme, isCurrentTariff) => {
     if (theme.sort === 0)

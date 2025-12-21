@@ -66,7 +66,7 @@ const items = [
     icon: Folder,
   },
   {
-    name: 'Ярлыки',
+    name: 'Метки',
     url: (bot_id) => `/${bot_id}/tags`,
     icon: Tag,
   },
@@ -193,9 +193,9 @@ function BotLayoutContent({ children }) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <SidebarMenuButton size="lg" className="">
-                    <Avatar className="h-8 w-8 rounded-lg">
+                    <Avatar className="h-8 w-8 rounded-sm">
                       <AvatarImage src={user.photo_url} alt={user.first_name} />
-                      <AvatarFallback className="rounded-lg">
+                      <AvatarFallback className="rounded-sm">
                         {user.first_name.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>

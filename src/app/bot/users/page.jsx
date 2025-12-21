@@ -212,23 +212,31 @@ export default function UsersList() {
                       <CardContent className="p-4">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                           <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div
-                              className={`p-2 rounded-lg shrink-0 ${user.is_blocked ? 'bg-destructive/10' : 'bg-primary/10'}`}
-                            >
-                              <UserCircle2
-                                className={`w-5 h-5 ${user.is_blocked ? 'text-destructive' : 'text-primary'}`}
+                            {user.photo_url ? (
+                              <img 
+                                src={user.photo_url} 
+                                alt={`${user.first_name} ${user.last_name || ''}`}
+                                className="w-12 h-12 rounded-lg object-cover shrink-0"
                               />
-                            </div>
+                            ) : (
+                              <div
+                                className={`w-12 h-12 flex items-center justify-center rounded-lg shrink-0 ${user.is_blocked ? 'bg-destructive/10' : 'bg-primary/10'}`}
+                              >
+                                <UserCircle2
+                                  className={`w-6 h-6 ${user.is_blocked ? 'text-destructive' : 'text-primary'}`}
+                                />
+                              </div>
+                            )}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-3 mb-1 flex-wrap">
                                 <span className="font-medium text-base group-hover:text-primary transition-colors truncate">
-                                  {user.first_name}
+                                  {user.first_name} {user.last_name || ''}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
                                 <div className="flex items-center gap-1.5 shrink-0">
                                   <Hash className="w-3.5 h-3.5" />
-                                  <span>{user.id}</span>
+                                  <span>{user.tg_id}</span>
                                 </div>
                                 {user.username && (
                                   <>

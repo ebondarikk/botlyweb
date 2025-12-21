@@ -50,16 +50,18 @@ export const ManagerSchema = z.object({
   username: z.string(),
   is_active: z.boolean(),
   name: z.string().optional(),
+  last_name: z.string().optional(),
 });
 
 function getDefaultValues(manager) {
   if (!manager) {
-    return { username: '', is_active: false, name: '' };
+    return { username: '', is_active: false, name: '', last_name: '' };
   }
   return {
     username: manager.username || '',
     is_active: manager.is_active || false,
     name: manager.first_name || '',
+    last_name: manager.last_name || '',
   };
 }
 
@@ -97,6 +99,7 @@ export default function ManagerFormPage() {
   const params = useParams();
   const navigate = useNavigate();
   const [isVerified, setIsVerified] = useState(false);
+  const [verifiedManager, setVerifiedManager] = useState(null);
 
   const {
     manager: existingManager,
@@ -132,8 +135,13 @@ export default function ManagerFormPage() {
     setChecking(true);
     try {
       const response = await checkManagerUsername(params.bot_id, parsedUsername);
-      // Ожидается, что response содержит поле name
+      // Ожидается, что response содержит поля name и last_name
       form.setValue('name', response.first_name || '');
+      form.setValue('last_name', response.last_name || '');
+      setVerifiedManager({
+        ...response,
+        username: parsedUsername
+      });
       setIsVerified(true);
       toast.success('Менеджер проверен');
     } catch (error) {
@@ -150,6 +158,7 @@ export default function ManagerFormPage() {
       const subscription = form.watch((value, { name }) => {
         if (name === 'username') {
           setIsVerified(false);
+          setVerifiedManager(null);
         }
       });
       return () => subscription.unsubscribe();
@@ -246,24 +255,25 @@ export default function ManagerFormPage() {
                       </div>
                     </CardHeader>
                     <CardContent className="p-6 space-y-6">
-                      <FormField
-                        control={form.control}
-                        name="username"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Username</FormLabel>
-                            <FormControl>
-                              <Input
-                                className="h-11"
-                                placeholder="@username или https://t.me/username"
-                                {...field}
-                                disabled={isEditMode}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      {!isEditMode && (
+                        <FormField
+                          control={form.control}
+                          name="username"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Username</FormLabel>
+                              <FormControl>
+                                <Input
+                                  className="h-11"
+                                  placeholder="@username или https://t.me/username"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
 
                       {!isEditMode && (
                         <motion.div
@@ -306,19 +316,57 @@ export default function ManagerFormPage() {
                         </motion.div>
                       )}
 
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Имя</FormLabel>
-                            <FormControl>
-                              <Input className="h-11" {...field} disabled />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      {isEditMode && existingManager && (
+                        <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/30">
+                          {existingManager.photo_url ? (
+                            <img 
+                              src={existingManager.photo_url} 
+                              alt={`${existingManager.first_name} ${existingManager.last_name || ''}`}
+                              className="w-16 h-16 rounded-lg object-cover"
+                            />
+                          ) : (
+                            <div className="w-16 h-16 flex items-center justify-center rounded-lg bg-primary/10">
+                              <User2 className="w-8 h-8 text-primary" />
+                            </div>
+                          )}
+                          <div className="flex-1">
+                            <h3 className="font-medium text-lg">
+                              {existingManager.first_name} {existingManager.last_name || ''}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              @{existingManager.username}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {!isEditMode && isVerified && verifiedManager && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="flex items-center gap-4 p-4 rounded-lg bg-muted/30"
+                        >
+                          {verifiedManager.photo_url ? (
+                            <img 
+                              src={verifiedManager.photo_url} 
+                              alt={`${verifiedManager.first_name} ${verifiedManager.last_name || ''}`}
+                              className="w-16 h-16 rounded-lg object-cover"
+                            />
+                          ) : (
+                            <div className="w-16 h-16 flex items-center justify-center rounded-lg bg-primary/10">
+                              <User2 className="w-8 h-8 text-primary" />
+                            </div>
+                          )}
+                          <div className="flex-1">
+                            <h3 className="font-medium text-lg">
+                              {verifiedManager.first_name} {verifiedManager.last_name || ''}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              @{verifiedManager.username}
+                            </p>
+                          </div>
+                        </motion.div>
+                      )}
 
                       <FormField
                         control={form.control}

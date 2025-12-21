@@ -189,6 +189,21 @@ export async function getGoals(botId) {
 }
 
 /**
+ * Получение аналитических данных дашборда бота с фильтром по периоду.
+ *
+ * OpenAPI: GET /bots/{bot_id}/dashboard
+ * Схема ответа: DashboardResponse
+ *
+ * @param {number} botId - Идентификатор бота.
+ * @param {string} period - Период фильтрации (today, current_week, current_month, three_months, year, all_time).
+ */
+export async function getDashboard(botId, period = 'current_month') {
+  return apiRequest(`/bots/${botId}/dashboard?period=${period}`, {
+    method: 'GET',
+  });
+}
+
+/**
  * Обновление данных бота.
  *
  * OpenAPI: PUT /bots/{bot_id}

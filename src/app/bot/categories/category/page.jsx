@@ -111,8 +111,9 @@ export default function CategoryFormPage() {
         const resp = await updateCategory(params.bot_id, params.category_id, values);
         toast.success('Категория успешно сохранена');
       } else {
-        await createCategory(params.bot_id, values);
+        const resp = await createCategory(params.bot_id, values);
         toast.success('Категория успешно создана');
+        navigate(`/${params.bot_id}/categories/${resp.id}`);
       }
     } catch (error) {
       toast.error(error?.details?.errorMessage);

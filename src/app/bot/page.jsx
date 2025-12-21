@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -13,7 +13,7 @@ import {
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useBot } from '@/context/BotContext';
 import { Skeleton } from '@/components/ui/skeleton';
-import { updateBot } from '@/lib/api';
+import { getDashboard } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -23,7 +23,6 @@ import {
   TrendingUp,
   Bot,
   ExternalLink,
-  Save,
   AlertTriangle,
   Ban,
   Crown,
@@ -37,13 +36,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { ORDER_STATUSES } from '@/lib/utils';
 import { TARIFF_THEMES } from '@/lib/constants/tariffs';
 import BotLayout from './layout';
 import OnboardingCard from '@/components/ui/onboarding-card';
 import { getGoals } from '@/lib/api';
-import { Rocket, CheckCircle2, Gift } from 'lucide-react';
+import { Rocket, CheckCircle2, Gift, Calendar } from 'lucide-react';
+
+// Константы для периодов фильтрации
+const PERIOD_OPTIONS = [
+  { value: 'today', label: 'Сегодня' },
+  { value: 'current_week', label: 'Текущая неделя' },
+  { value: 'current_month', label: 'Текущий месяц' },
+  { value: 'three_months', label: '3 месяца' },
+  { value: 'year', label: 'Год' },
+  { value: 'all_time', label: 'За все время' },
+];
 
 // Функция для форматирования даты
 const formatDate = (dateString) => {
@@ -104,27 +112,26 @@ const getThemeIcon = (theme) => {
 
 function BotPage() {
   const { bot, loading, setBot } = useBot();
-  const [currency, setCurrency] = useState('');
-  const [welcomeText, setWelcomeText] = useState('');
-  const [saving, setSaving] = useState(false);
+  const params = useParams();
+  const bot_id = params?.bot_id;
+  
   const [goals, setGoals] = useState([]);
   const [showWelcome, setShowWelcome] = useState(false);
   const [completeGoals, setCompleteGoals] = useState(null);
   const [hasDiscount, setHasDiscount] = useState(false);
+  
+  // Состояние для аналитических данных
+  const [dashboardData, setDashboardData] = useState(null);
+  const [dashboardLoading, setDashboardLoading] = useState(true); // Начинаем с true
+  const [selectedPeriod, setSelectedPeriod] = useState('current_month');
 
-  useEffect(() => {
-    if (!loading && bot) {
-      setCurrency(bot?.currency);
-      setWelcomeText(bot?.welcome_text);
-    }
-  }, [bot, loading]);
 
   useEffect(() => {
     let ignore = false;
     async function loadGoals() {
-      if (!bot?.id) return;
+      if (!bot_id) return;
       try {
-        const data = await getGoals(bot.id);
+        const data = await getGoals(bot_id);
         if (!ignore) {
           const filtered = data?.goals || [];
           setGoals(filtered);
@@ -141,23 +148,33 @@ function BotPage() {
     return () => {
       ignore = true;
     };
-  }, [bot?.id]);
+  }, [bot_id]);
 
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const updatedBot = await updateBot(bot.id, {
-        currency,
-        welcome_text: welcomeText,
-      });
-      setBot(updatedBot);
-      toast.success('Данные обновлены');
-    } catch (error) {
-      toast.error('Ошибка обновления');
-    } finally {
-      setSaving(false);
+  // Загрузка аналитических данных - запускается параллельно с загрузкой бота
+  useEffect(() => {
+    let ignore = false;
+    async function loadDashboard() {
+      if (!bot_id) return;
+      setDashboardLoading(true);
+      try {
+        const data = await getDashboard(bot_id, selectedPeriod);
+        if (!ignore) {
+          setDashboardData(data);
+        }
+      } catch (e) {
+        console.error('Ошибка загрузки аналитики:', e);
+      } finally {
+        if (!ignore) {
+          setDashboardLoading(false);
+        }
+      }
     }
-  };
+    loadDashboard();
+    return () => {
+      ignore = true;
+    };
+  }, [bot_id, selectedPeriod]);
+
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -186,12 +203,29 @@ function BotPage() {
   };
 
   const statsCards = [
-    { title: 'Заказы', value: bot?.orders_count, icon: Package },
-    { title: 'Клиенты', value: bot?.users_count, icon: Users },
-    { title: 'Средний чек', value: `${bot?.average_bill} ${bot?.currency}`, icon: CreditCard },
+    { 
+      title: 'Заказы', 
+      value: dashboardLoading ? null : dashboardData?.orders_count, 
+      icon: Package 
+    },
+    { 
+      title: 'Клиенты', 
+      value: dashboardLoading ? null : dashboardData?.users_count, 
+      icon: Users 
+    },
+    { 
+      title: 'Средний чек', 
+      value: dashboardLoading || !bot ? null : `${dashboardData?.average_bill || 0} ${bot?.currency}`, 
+      icon: CreditCard 
+    },
+    { 
+      title: 'Общий доход', 
+      value: dashboardLoading || !bot ? null : `${dashboardData?.total_revenue || 0} ${bot?.currency}`, 
+      icon: TrendingUp 
+    },
   ];
 
-  const statusInfo = bot ? getStatusInfo(bot.status, bot.id) : null;
+  const statusInfo = bot ? getStatusInfo(bot.status, bot_id) : null;
   const theme = bot ? TARIFF_THEMES[bot.tariff?.sort] || TARIFF_THEMES.default : null;
   const badgeClasses = theme ? getBadgeClasses(theme) : '';
 
@@ -215,7 +249,7 @@ function BotPage() {
               actionText="Активировать"
               onAction={() => {
                 // Открываем модалку смены тарифа и заранее выберем Стандарт
-                window.location.href = `/${bot?.id}/subscription?open=tariff&select=standard&trial=14`;
+                window.location.href = `/${bot_id}/subscription?open=tariff&select=standard&trial=14`;
               }}
             />
           </div>
@@ -262,12 +296,12 @@ function BotPage() {
                 if (!first) return;
                 const url =
                   first.id === 'add_products'
-                    ? `/${bot?.id}/products`
+                    ? `/${bot_id}/products`
                     : first.id === 'add_categories'
-                    ? `/${bot?.id}/categories`
+                    ? `/${bot_id}/categories`
                     : first.id === 'setup_delivery'
-                    ? `/${bot?.id}/settings`
-                    : `/${bot?.id}`;
+                    ? `/${bot_id}/settings`
+                    : `/${bot_id}`;
                 window.location.href = url;
               }}
               onDismiss={() => setShowWelcome(false)}
@@ -321,130 +355,50 @@ function BotPage() {
                     transition={{ delay: 0.2 }}
                     className="flex items-center gap-2 mt-1"
                   >
-                    <p className="text-sm text-muted-foreground">Telegram Bot</p>
+                    <a
+                      href={`https://t.me/${bot?.username}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+                    >
+                      @{bot?.username}
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
                   </motion.div>
                 )}
               </div>
             </motion.div>
           </CardHeader>
           <CardContent className="px-2">
+
+            {/* Фильтр периода */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="custom-card rounded-xl border p-6 bg-card/50 hover:bg-card/70 transition-all"
+              transition={{ duration: 0.5, delay: 0.6 }}
+              className="flex items-center justify-end mb-6"
             >
-              <div className="flex flex-col lg:flex-row justify-between gap-8">
-                {/* Левая часть: ID и Пользователь */}
-                <div className="flex flex-col gap-6">
-                  {loading ? (
-                    <>
-                      <Skeleton className="h-7 w-32" />
-                      <Skeleton className="h-7 w-40" />
-                    </>
-                  ) : (
-                    <>
-                      <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg bg-muted/50"
-                      >
-                        <span className="text-sm text-muted-foreground">ID:</span>
-                        <span className="text-sm font-medium">{bot?.id}</span>
-                      </motion.div>
-                      <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="flex items-center gap-3"
-                      >
-                        <span className="text-sm text-muted-foreground">Username:</span>
-                        <a
-                          href={`https://t.me/${bot?.username}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-                        >
-                          @{bot?.username}
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
-                      </motion.div>
-                    </>
-                  )}
-                </div>
-
-                {/* Правая часть: Редактируемые поля */}
-                <div className="flex-1 max-w-xl space-y-8">
-                  {loading ? (
-                    <>
-                      <Skeleton className="h-[72px] w-full" />
-                      <Skeleton className="h-[132px] w-full" />
-                    </>
-                  ) : (
-                    <>
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="space-y-3"
-                      >
-                        <p className="text-sm font-medium text-muted-foreground">Валюта</p>
-                        <Select value={currency} onValueChange={setCurrency}>
-                          <SelectTrigger className="h-11">
-                            <SelectValue placeholder="Выберите валюту" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectItem value="BYN">BYN</SelectItem>
-                              <SelectItem value="RUB">RUB</SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      </motion.div>
-
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                        className="space-y-3"
-                      >
-                        <p className="text-sm font-medium text-muted-foreground">
-                          Приветственное сообщение
-                        </p>
-                        <Textarea
-                          className="min-h-[100px] resize-y"
-                          value={welcomeText}
-                          onChange={(e) => setWelcomeText(e.target.value)}
-                          placeholder="Введите приветственное сообщение..."
-                        />
-                      </motion.div>
-                    </>
-                  )}
-                </div>
+              <div className="flex items-center gap-3">
+                <Calendar className="w-4 h-4 text-muted-foreground" />
+                <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {PERIOD_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
-
-              {!loading && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="flex justify-end mt-8"
-                >
-                  <Button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="sm:px-12 h-11 flex items-center gap-2"
-                  >
-                    <Save className="w-4 h-4" />
-                    {saving ? 'Сохранение...' : 'Сохранить'}
-                  </Button>
-                </motion.div>
-              )}
             </motion.div>
 
             {/* Статистика */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mt-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               <AnimatePresence>
                 {statsCards.map((card, i) => (
                   <motion.div
@@ -463,7 +417,7 @@ function BotPage() {
                       <div>
                         <p className="text-sm font-medium text-muted-foreground">{card.title}</p>
                         <div className="text-2xl font-semibold mt-1">
-                          {loading ? <Skeleton className="h-8 w-16" /> : card.value}
+                          {dashboardLoading ? <Skeleton className="h-8 w-16" /> : card.value}
                         </div>
                       </div>
                     </div>
@@ -487,13 +441,16 @@ function BotPage() {
                 <h3 className="text-base font-semibold">Доход</h3>
               </div>
               <div className="h-64">
-                {loading ? (
+                {dashboardLoading ? (
                   <Skeleton className="h-full w-full" />
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
-                    {bot?.revenue?.length ? (
-                      <LineChart data={bot?.revenue}>
-                        <XAxis dataKey="date" />
+                    {dashboardData?.revenue?.length ? (
+                      <LineChart data={dashboardData.revenue}>
+                        <XAxis 
+                          dataKey="date" 
+                          tickFormatter={(value) => formatChartDate(value)}
+                        />
                         <YAxis />
                         <Tooltip
                           contentStyle={{
@@ -505,20 +462,21 @@ function BotPage() {
                             fontSize: '14px',
                             padding: '8px 12px',
                           }}
+                          labelFormatter={(value) => formatDate(value)}
                         />
                         <Line
                           type="monotone"
                           dataKey="revenue"
-                          stroke="#4F46E5"
+                          stroke="hsl(var(--primary))"
                           name="Выручка"
                           strokeWidth={2}
-                          dot={{ fill: '#4F46E5', r: 4 }}
-                          activeDot={{ r: 6, fill: '#4F46E5' }}
+                          dot={{ fill: 'hsl(var(--primary))', r: 4 }}
+                          activeDot={{ r: 6, fill: 'hsl(var(--primary))' }}
                         />
                       </LineChart>
                     ) : (
                       <p className="flex items-center justify-center h-full text-sm text-muted-foreground">
-                        Нет данных
+                        Нет данных за выбранный период
                       </p>
                     )}
                   </ResponsiveContainer>

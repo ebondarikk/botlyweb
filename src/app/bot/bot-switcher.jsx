@@ -53,8 +53,8 @@ export function BotSwitcher({ bots, activeBot, setActiveBot, loading }) {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarFallback className="rounded-lg bg-gray-200 text-gray-500">
+              <Avatar className="h-8 w-8 rounded-sm">
+                <AvatarFallback className="rounded-sm bg-gray-200 text-gray-500">
                   {activeBot?.fullname.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -85,8 +85,8 @@ export function BotSwitcher({ bots, activeBot, setActiveBot, loading }) {
                 onClick={() => setActiveBot(bot)}
                 className="gap-3 p-3"
               >
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarFallback className="rounded-lg bg-gray-200 text-gray-500">
+                <Avatar className="h-8 w-8 rounded-sm">
+                  <AvatarFallback className="rounded-sm bg-gray-200 text-gray-500">
                     {bot?.fullname.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -99,7 +99,7 @@ export function BotSwitcher({ bots, activeBot, setActiveBot, loading }) {
             ))}
             <DropdownMenuSeparator />
             <DropdownMenuItem className="gap-2 p-2 no-pointer-events">
-              <div className="flex size-6 items-center justify-center rounded-md border bg-background">
+              <div className="flex size-6 items-center justify-center rounded-sm border bg-background">
                 <Plus className="size-4" />
               </div>
               <div className="font-medium text-foreground ">

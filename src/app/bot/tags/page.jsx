@@ -116,7 +116,7 @@ export default function TagsList() {
           className="flex py-4 flex-col md:flex-row justify-between w-full gap-4 items-center"
         >
           <div className="text-lg font-medium">
-            {loading ? <Skeleton className="h-6 w-48 bg-muted/50" /> : `Найдено ${count} ярлыков`}
+            {loading ? <Skeleton className="h-6 w-48 bg-muted/50" /> : `Найдено ${count} меток`}
           </div>
 
           <TooltipProvider>
@@ -129,7 +129,7 @@ export default function TagsList() {
                   >
                     <Link to="add" className="flex items-center gap-2">
                       <Plus className="w-4 h-4" />
-                      Добавить ярлык
+                      Добавить метку
                     </Link>
                   </Button>
                 </div>

@@ -235,17 +235,25 @@ export default function ManagersList() {
                       <CardContent className="p-4">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                           <Link to={`/${bot.id}/managers/${manager.id}`} className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
-                            <div
-                              className={`p-2 rounded-lg shrink-0 ${manager.is_active ? 'bg-primary/10' : 'bg-muted'}`}
-                            >
-                              <User
-                                className={`w-5 h-5 ${manager.is_active ? 'text-primary' : 'text-muted-foreground'}`}
+                            {manager.photo_url ? (
+                              <img 
+                                src={manager.photo_url} 
+                                alt={`${manager.first_name} ${manager.last_name || ''}`}
+                                className="w-12 h-12 rounded-lg object-cover shrink-0"
                               />
-                            </div>
+                            ) : (
+                              <div
+                                className={`w-12 h-12 flex items-center justify-center rounded-lg shrink-0 ${manager.is_active ? 'bg-primary/10' : 'bg-muted'}`}
+                              >
+                                <User
+                                  className={`w-6 h-6 ${manager.is_active ? 'text-primary' : 'text-muted-foreground'}`}
+                                />
+                              </div>
+                            )}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-3 mb-1 flex-wrap">
                                 <span className="font-medium text-base group-hover:text-primary transition-colors truncate">
-                                  {manager.first_name}
+                                  {manager.first_name} {manager.last_name || ''}
                                 </span>
                                 {manager.is_admin && (
                                   <Badge
@@ -260,7 +268,7 @@ export default function ManagersList() {
                               <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
                                 <div className="flex items-center gap-1.5 shrink-0">
                                   <Hash className="w-3.5 h-3.5" />
-                                  <span>{manager.id}</span>
+                                  <span>{manager.tg_id}</span>
                                 </div>
                                 {manager.username && (
                                   <>
