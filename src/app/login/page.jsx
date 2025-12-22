@@ -85,8 +85,8 @@ export default function LoginPage() {
     } else if (typeof document !== 'undefined' && !widgetCreated) {
       const script = document.createElement('script');
       script.src = 'https://telegram.org/js/telegram-widget.js?7';
-      script.setAttribute('data-telegram-login', import.meta.env.VITE_TELEGRAM_BOT_NAME);
-      // script.setAttribute('data-telegram-login', 'botly_bbot');
+      // script.setAttribute('data-telegram-login', import.meta.env.VITE_TELEGRAM_BOT_NAME);
+      script.setAttribute('data-telegram-login', 'botly_bbot');
       script.setAttribute('data-size', 'large');
       script.setAttribute('data-userpic', 'true');
       script.setAttribute('data-request-access', 'write');

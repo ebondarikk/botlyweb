@@ -1,7 +1,7 @@
 import { toast } from 'react-hot-toast';
 
-const BASE_URL = import.meta.env.VITE_API_URL;
-// const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
+// const BASE_URL = import.meta.env.VITE_API_URL;
+const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
 
 /**
  * Функция-обёртка для API-запросов.
@@ -719,6 +719,31 @@ export async function connectQuickResto(botId, data) {
 export async function disconnectQuickResto(botId) {
   return apiRequest(`/bots/${botId}/integrations/quickresto/disconnect`, {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+/**
+ * Получение заказов с пагинацией и фильтром периода
+ *
+ * @param {number} botId - Идентификатор бота
+ * @param {number} page - Номер страницы (начиная с 1)
+ * @param {number} limit - Количество заказов на странице
+ * @param {string} period - Период фильтрации (today, current_week, current_month, three_months, year, all_time)
+ */
+export async function getOrders(botId, page = 1, limit = 10, period = 'current_month') {
+  const params = {
+    page,
+    limit,
+    period,
+  };
+
+  const queryParams = new URLSearchParams(params).toString();
+
+  return apiRequest(`/bots/${botId}/orders?${queryParams}`, {
+    method: 'GET',
     headers: {
       'Content-Type': 'application/json',
     },

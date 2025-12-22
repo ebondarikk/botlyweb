@@ -41,7 +41,9 @@ import { TARIFF_THEMES } from '@/lib/constants/tariffs';
 import BotLayout from './layout';
 import OnboardingCard from '@/components/ui/onboarding-card';
 import { getGoals } from '@/lib/api';
-import { Rocket, CheckCircle2, Gift, Calendar } from 'lucide-react';
+import { Rocket, CheckCircle2, Gift, Calendar, UserCircle2 } from 'lucide-react';
+import { useOrders } from '@/hooks/use-orders';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 // Константы для периодов фильтрации
 const PERIOD_OPTIONS = [
@@ -110,6 +112,48 @@ const getThemeIcon = (theme) => {
   return <Icon className="w-3 h-3" />;
 };
 
+// Функция для получения стилей статуса заказа
+const getOrderStatusStyle = (status) => {
+  const styles = {
+    'w-ap': { // waiting approval
+      backgroundColor: 'rgba(255, 193, 7, 0.2)',
+      color: '#b97b00',
+      border: '1px solid rgba(255, 193, 7, 0.6)',
+    },
+    'ap': {
+      backgroundColor: 'rgba(40, 167, 69, 0.2)',
+      color: '#25a244',
+      border: '1px solid rgba(40, 167, 69, 0.6)',
+    },
+    'ip': {
+      backgroundColor: 'rgba(23, 162, 184, 0.2)',
+      color: '#1696b6',
+      border: '1px solid rgba(23, 162, 184, 0.6)',
+    },
+    'w-p': {
+      backgroundColor: 'rgba(255, 193, 7, 0.2)',
+      color: '#b97b00',
+      border: '1px solid rgba(255, 193, 7, 0.6)',
+    },
+    'rd': {
+      backgroundColor: 'rgba(40, 167, 69, 0.2)',
+      color: '#25a244',
+      border: '1px solid rgba(40, 167, 69, 0.6)',
+    },
+    'dec': {
+      backgroundColor: 'rgba(220, 53, 69, 0.2)',
+      color: '#ea2424',
+      border: '1px solid rgba(220, 53, 69, 0.6)',
+    },
+  };
+  
+  return styles[status] || {
+    backgroundColor: 'rgba(107, 114, 128, 0.2)',
+    color: '#6b7280',
+    border: '1px solid rgba(107, 114, 128, 0.6)',
+  };
+};
+
 function BotPage() {
   const { bot, loading, setBot } = useBot();
   const params = useParams();
@@ -124,6 +168,19 @@ function BotPage() {
   const [dashboardData, setDashboardData] = useState(null);
   const [dashboardLoading, setDashboardLoading] = useState(true); // Начинаем с true
   const [selectedPeriod, setSelectedPeriod] = useState('current_month');
+
+  // Хук для управления заказами
+  const {
+    orders,
+    loading: ordersLoading,
+    loadingMore: ordersLoadingMore,
+    error: ordersError,
+    hasMore: ordersHasMore,
+    total: ordersTotal,
+    period: ordersPeriod,
+    loadMore: loadMoreOrders,
+    changePeriod: changeOrdersPeriod,
+  } = useOrders(bot_id, selectedPeriod);
 
 
   useEffect(() => {
@@ -380,7 +437,13 @@ function BotPage() {
             >
               <div className="flex items-center gap-3">
                 <Calendar className="w-4 h-4 text-muted-foreground" />
-                <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                <Select 
+                  value={selectedPeriod} 
+                  onValueChange={(value) => {
+                    setSelectedPeriod(value);
+                    changeOrdersPeriod(value);
+                  }}
+                >
                   <SelectTrigger className="w-48">
                     <SelectValue />
                   </SelectTrigger>
@@ -484,59 +547,172 @@ function BotPage() {
               </div>
             </motion.div>
 
-            {/* Последние заказы */}
+            {/* Заказы с бесконечным скроллом */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
               className="custom-card rounded-xl border p-6 mt-8 bg-card/50 hover:bg-card/70 transition-all"
             >
-              <h3 className="text-base font-semibold mb-6">Последние заказы</h3>
-              {loading ? (
-                <Skeleton className="h-48 w-full" />
-              ) : (
-                <div className="overflow-hidden rounded-lg">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Клиент</TableHead>
-                        <TableHead>Сумма</TableHead>
-                        <TableHead>Статус</TableHead>
-                        <TableHead>Создан</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <AnimatePresence>
-                        {bot?.last_orders?.map((order, index) => (
-                          <motion.tr
-                            key={order.id}
-                            custom={index}
-                            variants={tableRowVariants}
-                            initial="hidden"
-                            animate="visible"
-                            whileHover={{ backgroundColor: 'rgba(0, 0, 0, 0.02)' }}
-                            className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
-                          >
-                            <TableCell className="font-medium">{order.id}</TableCell>
-                            <TableCell>{order.fullname}</TableCell>
-                            <TableCell className="font-medium text-primary">
-                              {order.total} {bot?.currency}
-                            </TableCell>
-                            <TableCell>
-                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                                {ORDER_STATUSES[order.status]}
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {formatDate(order.created_at)}
-                            </TableCell>
-                          </motion.tr>
-                        ))}
-                      </AnimatePresence>
-                    </TableBody>
-                  </Table>
+              <div className="mb-6">
+                <h3 className="text-base font-semibold">
+                  Заказы {ordersTotal > 0 && `(${ordersTotal})`}
+                </h3>
+              </div>
+
+              {ordersError ? (
+                <div className="text-center py-8">
+                  <p className="text-sm text-muted-foreground">Не удалось загрузить заказы</p>
                 </div>
+              ) : (
+                ordersLoading && orders.length === 0 ? (
+                  // Скелетоны для первой загрузки
+                  <div className="overflow-hidden rounded-lg">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Номер</TableHead>
+                          <TableHead>Клиент</TableHead>
+                          <TableHead>Сумма</TableHead>
+                          <TableHead>Статус</TableHead>
+                          <TableHead>Создан</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {Array.from({ length: 5 }).map((_, index) => (
+                          <TableRow key={index}>
+                            <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : orders.length > 0 ? (
+                  <InfiniteScroll
+                    dataLength={orders.length}
+                    next={loadMoreOrders}
+                    hasMore={ordersHasMore}
+                    scrollThreshold={0.8}
+                    loader={
+                      <div className="flex items-center justify-center gap-2 py-4">
+                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-sm text-muted-foreground">Загружаем еще...</span>
+                      </div>
+                    }
+                  >
+                    <div className="overflow-hidden rounded-lg">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Номер</TableHead>
+                            <TableHead>Клиент</TableHead>
+                            <TableHead>Менеджер</TableHead>
+                            <TableHead>Сумма</TableHead>
+                            <TableHead>Статус</TableHead>
+                            <TableHead>Создан</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          <AnimatePresence>
+                            {orders.map((order, index) => (
+                              <motion.tr
+                                key={order.id}
+                                custom={index}
+                                variants={tableRowVariants}
+                                initial="hidden"
+                                animate="visible"
+                                whileHover={{ backgroundColor: 'rgba(0, 0, 0, 0.02)' }}
+                                className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                              >
+                                <TableCell className="font-medium">#{order.number}</TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    {order.client?.photo_url ? (
+                                      <img 
+                                        src={order.client.photo_url} 
+                                        alt="" 
+                                        className="w-6 h-6 rounded-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-6 h-6 flex items-center justify-center rounded-full bg-primary/10">
+                                        <UserCircle2 className="w-4 h-4 text-primary" />
+                                      </div>
+                                    )}
+                                    <span>
+                                      {order.client?.first_name} {order.client?.last_name || ''}
+                                    </span>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Link 
+                                    to={`/${bot_id}/managers/${order.manager?.id}`}
+                                    className="flex items-center gap-2 hover:text-primary transition-colors"
+                                  >
+                                    {order.manager?.photo_url ? (
+                                      <img 
+                                        src={order.manager.photo_url} 
+                                        alt="" 
+                                        className="w-6 h-6 rounded-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-6 h-6 flex items-center justify-center rounded-full bg-primary/10">
+                                        <UserCircle2 className="w-4 h-4 text-primary" />
+                                      </div>
+                                    )}
+                                    <span>
+                                      {order.manager?.first_name} {order.manager?.last_name || ''}
+                                    </span>
+                                  </Link>
+                                </TableCell>
+                                <TableCell className="font-medium text-primary">
+                                  {order.total} {bot?.currency}
+                                </TableCell>
+                                <TableCell>
+                                  <span 
+                                    className="px-2 py-1 rounded-md text-xs font-medium"
+                                    style={getOrderStatusStyle(order.status)}
+                                  >
+                                    {ORDER_STATUSES[order.status]}
+                                  </span>
+                                </TableCell>
+                                <TableCell className="text-muted-foreground">
+                                  {formatDate(order.created_at)}
+                                </TableCell>
+                              </motion.tr>
+                            ))}
+                          </AnimatePresence>
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </InfiniteScroll>
+                ) : (
+                  <div className="overflow-hidden rounded-lg">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Номер</TableHead>
+                          <TableHead>Клиент</TableHead>
+                          <TableHead>Менеджер</TableHead>
+                          <TableHead>Сумма</TableHead>
+                          <TableHead>Статус</TableHead>
+                          <TableHead>Создан</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                            Нет заказов за выбранный период
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
+                )
               )}
             </motion.div>
           </CardContent>

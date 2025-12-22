@@ -722,51 +722,57 @@ export function SubscriptionPage() {
                   <AccordionContent>
                     <div className="px-6 pb-6">
                       <div className="divide-y">
-                        {subscription?.payments.map((payment) => (
-                          <div
-                            key={payment.id}
-                            className="flex items-center justify-between py-4 first:pt-0 last:pb-0"
-                          >
-                            <div>
-                              <div className="font-medium">{payment.pay_for}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {new Date(payment.created_at).toLocaleDateString('ru-RU', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <div className="font-medium">{payment.amount} BYN</div>
-                              <div className="flex items-center gap-2 min-w-[90px]">
-                                <div
-                                  className={`px-2 py-1 text-xs rounded-full flex-grow text-center ${getPaymentStatusStyle(
-                                    payment.status,
-                                  )}`}
-                                >
-                                  {getPaymentStatusText(payment.status)}
-                                </div>
-                                {payment.status === 'failed' && payment.reason && (
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <div className="flex-shrink-0">
-                                          <HelpCircle className="w-4 h-4 text-red-500 cursor-help" />
-                                        </div>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p className="text-xs">{payment.reason}</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                )}
-                              </div>
-                            </div>
+                        {subscription?.payments.length === 0 ? (
+                          <div className="py-8 w-full text-center text-muted-foreground text-sm">
+                            Нет истории платежей
                           </div>
-                        ))}
+                        ) : (
+                          subscription.payments.map((payment) => (
+                            <div
+                              key={payment.id}
+                              className="flex items-center justify-between py-4 first:pt-0 last:pb-0"
+                            >
+                              <div>
+                                <div className="font-medium">{payment.pay_for}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {new Date(payment.created_at).toLocaleDateString('ru-RU', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div className="font-medium">{payment.amount} BYN</div>
+                                <div className="flex items-center gap-2 min-w-[90px]">
+                                  <div
+                                    className={`px-2 py-1 text-xs rounded-full flex-grow text-center ${getPaymentStatusStyle(
+                                      payment.status,
+                                    )}`}
+                                  >
+                                    {getPaymentStatusText(payment.status)}
+                                  </div>
+                                  {payment.status === 'failed' && payment.reason && (
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <div className="flex-shrink-0">
+                                            <HelpCircle className="w-4 h-4 text-red-500 cursor-help" />
+                                          </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p className="text-xs">{payment.reason}</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </div>
                   </AccordionContent>
