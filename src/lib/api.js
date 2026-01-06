@@ -1,7 +1,7 @@
 import { toast } from 'react-hot-toast';
 
 // const BASE_URL = import.meta.env.VITE_API_URL;
-const BASE_URL = 'https://botly-api-gp6tqxclnq-ew.a.run.app';
+const BASE_URL = 'https://botly-api-539646009318.europe-west1.run.app';
 
 /**
  * Функция-обёртка для API-запросов.
@@ -732,17 +732,157 @@ export async function disconnectQuickResto(botId) {
  * @param {number} page - Номер страницы (начиная с 1)
  * @param {number} limit - Количество заказов на странице
  * @param {string} period - Период фильтрации (today, current_week, current_month, three_months, year, all_time)
+ * @param {number} clientId - Идентификатор клиента для фильтрации (опционально)
  */
-export async function getOrders(botId, page = 1, limit = 10, period = 'current_month') {
+export async function getOrders(
+  botId,
+  page = 1,
+  limit = 10,
+  period = 'current_month',
+  clientId = null,
+) {
   const params = {
     page,
     limit,
     period,
   };
 
+  if (clientId) {
+    params.client_id = clientId;
+  }
+
   const queryParams = new URLSearchParams(params).toString();
 
-  return apiRequest(`/bots/${botId}/orders?${queryParams}`, {
+  return apiRequest(`/bots/${botId}/orders/?${queryParams}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+/**
+ * Получение списка компонентов бота
+ *
+ * @param {number} botId - Идентификатор бота
+ * @returns {Promise<object>} - Объект ComponentListResponse
+ */
+export async function getComponents(botId) {
+  return apiRequest(`/bots/${botId}/components`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+/**
+ * Создание нового компонента
+ *
+ * @param {number} botId - Идентификатор бота
+ * @param {object} componentData - Данные компонента (ComponentCreate)
+ * @returns {Promise<object>} - Созданный компонент
+ */
+export async function createComponent(botId, componentData) {
+  return apiRequest(`/bots/${botId}/components`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(componentData),
+  });
+}
+
+/**
+ * Получение списка групп опций
+ *
+ * @param {number} botId - Идентификатор бота
+ * @returns {Promise<object>} - Объект OptionGroupsResponse
+ */
+export async function getOptionGroups(botId) {
+  return apiRequest(`/bots/${botId}/options`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+/**
+ * Получение детальной информации о группе опций
+ *
+ * @param {number} botId - Идентификатор бота
+ * @param {number} groupId - Идентификатор группы опций
+ * @returns {Promise<object>} - Группа опций
+ */
+export async function getOptionGroup(botId, groupId) {
+  return apiRequest(`/bots/${botId}/options/${groupId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+/**
+ * Создание новой группы опций
+ *
+ * @param {number} botId - Идентификатор бота
+ * @param {object} groupData - Данные группы опций
+ * @returns {Promise<object>} - Созданная группа опций
+ */
+export async function createOptionGroup(botId, groupData) {
+  return apiRequest(`/bots/${botId}/options`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(groupData),
+  });
+}
+
+/**
+ * Обновление группы опций
+ *
+ * @param {number} botId - Идентификатор бота
+ * @param {number} groupId - Идентификатор группы опций
+ * @param {object} groupData - Данные для обновления
+ * @returns {Promise<object>} - Обновленная группа опций
+ */
+export async function updateOptionGroup(botId, groupId, groupData) {
+  return apiRequest(`/bots/${botId}/options/${groupId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(groupData),
+  });
+}
+
+/**
+ * Удаление группы опций
+ *
+ * @param {number} botId - Идентификатор бота
+ * @param {number} groupId - Идентификатор группы опций
+ * @returns {Promise<boolean>} - Результат удаления
+ */
+export async function deleteOptionGroup(botId, groupId) {
+  return apiRequest(`/bots/${botId}/options/${groupId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+/**
+ * Получение коротких групп опций для селекта
+ *
+ * @param {number} botId - Идентификатор бота
+ * @returns {Promise<object>} - Список коротких групп опций
+ */
+export async function getOptionGroupsShort(botId) {
+  return apiRequest(`/bots/${botId}/options/`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

@@ -1,5 +1,14 @@
 import * as z from 'zod'; // Подключаем zod
 
+// Схема для компонента товара
+export const ProductComponentSchema = z.object({
+  id: z.number().optional(), // ID связи товар-компонент (для существующих)
+  component_id: z.number().min(1, 'Выберите компонент'),
+  index: z.number().min(0, 'Индекс должен быть больше или равен 0'),
+  is_removable: z.boolean(),
+  name: z.string().optional(), // Для отображения в UI
+});
+
 export const SubproductSchema = z
   .object({
     name: z.string().min(1, 'Название должно содержать минимум 1 символ'),
@@ -68,6 +77,10 @@ const BaseProductSchema = z.object({
   grouped: z.boolean().default(false),
   // Подтовары – опционально, так как для простого товара их быть не должно
   subproducts: z.array(SubproductSchema).optional(),
+  // Компоненты товара – опционально
+  components: z.array(ProductComponentSchema).optional(),
+  // Группы опций товара – опционально
+  option_groups: z.array(z.number()).optional(),
 });
 
 // Схема продукта с проверками на уровне всего объекта

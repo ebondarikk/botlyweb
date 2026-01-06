@@ -51,10 +51,11 @@ import {
 } from 'lucide-react';
 
 import ImageUpload from '@/components/image-upload';
+import ComponentsMultiSelect from '@/components/ComponentsMultiSelect';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProduct } from '@/hooks/use-product';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { updateProduct, createProduct, deleteProduct } from '@/lib/api';
+import { updateProduct, createProduct, deleteProduct, getComponents, createComponent, getOptionGroupsShort } from '@/lib/api';
 import { useCategories } from '@/hooks/use-categories';
 import BotLayout from '@/app/bot/layout';
 import { useBot } from '@/context/BotContext';
@@ -156,6 +157,8 @@ function getDefaultValues(product) {
       warehouse: false,
       warehouse_count: 0,
       subproducts: [],
+      components: [],
+      option_groups: [],
     };
   }
   return {
@@ -179,6 +182,15 @@ function getDefaultValues(product) {
         warehouse: sub.warehouse || false,
         warehouse_count: sub.warehouse_count || 0,
       })) || [],
+    components:
+      product.components?.map((comp) => ({
+        id: comp.id, // ID связи товар-компонент (для существующих)
+        component_id: comp.component?.id || comp.component_id, // ID самого компонента
+        index: comp.index || 0,
+        is_removable: comp.is_removable !== undefined ? comp.is_removable : true,
+        name: comp.component?.name || comp.name || '',
+      })) || [],
+    option_groups: product.option_groups?.map(group => group.id) || [],
   };
 }
 
@@ -213,6 +225,17 @@ export default function ProductFormPage() {
     loading: tagsLoading,
     refetch: refetchTags,
   } = useTags(tagsLoaded ? params.bot_id : null);
+
+  // Состояние для компонентов
+  const [availableComponents, setAvailableComponents] = useState([]);
+  const [componentsLoading, setComponentsLoading] = useState(false);
+  const [componentsLoaded, setComponentsLoaded] = useState(false);
+
+  // Состояние для групп опций
+  const [selectedOptionGroups, setSelectedOptionGroups] = useState([]);
+  const [availableOptionGroups, setAvailableOptionGroups] = useState([]);
+  const [optionGroupsLoading, setOptionGroupsLoading] = useState(false);
+  const [optionGroupsLoaded, setOptionGroupsLoaded] = useState(false);
 
   // Создаем дополненный список категорий без мутации оригинального массива
   const categoriesWithEmpty = React.useMemo(() => {
@@ -351,6 +374,20 @@ export default function ProductFormPage() {
     }
   }, [existingProduct, allTags]);
 
+  useEffect(() => {
+    if (existingProduct && Array.isArray(existingProduct.option_groups)) {
+      // Если option_groups — массив объектов, используем их напрямую
+      if (existingProduct.option_groups.length > 0 && typeof existingProduct.option_groups[0] === 'object') {
+        setSelectedOptionGroups(existingProduct.option_groups);
+      } else {
+        // Если option_groups — массив id
+        setSelectedOptionGroups(
+          existingProduct.option_groups.map((id) => availableOptionGroups.find((g) => g.id === id)).filter(Boolean),
+        );
+      }
+    }
+  }, [existingProduct, availableOptionGroups]);
+
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'subproducts',
@@ -402,10 +439,31 @@ export default function ProductFormPage() {
         category_id = foundCategory ? foundCategory.id : null;
       }
       
+      // Подготавливаем компоненты для отправки
+      const components = (data.components || []).map((comp, index) => {
+        const componentData = {
+          component_id: comp.component_id,
+          index: index,
+          is_removable: comp.is_removable,
+        };
+        
+        // Если это существующий компонент (есть ID связи), добавляем его
+        if (comp.id) {
+          componentData.id = comp.id;
+        }
+        
+        return componentData;
+      });
+      
+      // Подготавливаем группы опций для отправки
+      const option_groups = selectedOptionGroups.map((g) => g.id);
+      
       const productData = {
         ...data,
         category_id,
         tags,
+        components,
+        option_groups,
       };
       
       // Удаляем поле category, так как теперь используем category_id
@@ -467,6 +525,62 @@ export default function ProductFormPage() {
     if (!tagsLoaded) {
       setTagsLoaded(true);
       if (typeof refetchTags === 'function') refetchTags();
+    }
+  };
+
+  // Загрузка компонентов
+  const loadComponents = async () => {
+    if (componentsLoaded) return;
+    
+    setComponentsLoading(true);
+    try {
+      const response = await getComponents(params.bot_id);
+      setAvailableComponents(response.components || []);
+      setComponentsLoaded(true);
+    } catch (error) {
+      console.error('Ошибка загрузки компонентов:', error);
+      toast.error('Ошибка загрузки компонентов');
+    } finally {
+      setComponentsLoading(false);
+    }
+  };
+
+  // Создание нового компонента
+  const handleCreateComponent = async (name) => {
+    try {
+      const newComponent = await createComponent(params.bot_id, { name });
+      setAvailableComponents(prev => [...prev, newComponent]);
+      toast.success('Компонент создан');
+      return newComponent;
+    } catch (error) {
+      console.error('Ошибка создания компонента:', error);
+      throw error;
+    }
+  };
+
+  // Загрузка групп опций
+  const loadOptionGroups = async () => {
+    if (optionGroupsLoaded) return;
+    
+    setOptionGroupsLoading(true);
+    try {
+      const response = await getOptionGroupsShort(params.bot_id);
+      setAvailableOptionGroups(response.option_groups || []);
+      setOptionGroupsLoaded(true);
+    } catch (error) {
+      console.error('Ошибка загрузки групп опций:', error);
+      toast.error('Ошибка загрузки групп опций');
+    } finally {
+      setOptionGroupsLoading(false);
+    }
+  };
+
+  // Добавление/удаление группы опций
+  const handleOptionGroupToggle = (group) => {
+    if (selectedOptionGroups.some((g) => g.id === group.id)) {
+      setSelectedOptionGroups(selectedOptionGroups.filter((g) => g.id !== group.id));
+    } else {
+      setSelectedOptionGroups([...selectedOptionGroups, group]);
     }
   };
 
@@ -808,6 +922,136 @@ export default function ProductFormPage() {
                                       Можно выбрать не более 5 меток
                                     </div>
                                   )}
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            );
+                          }}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="components"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center gap-2 mb-1">
+                                <FormLabel>Компоненты</FormLabel>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span className="inline-flex items-center cursor-pointer text-muted-foreground">
+                                        <Info className="w-4 h-4" />
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="right" className="max-w-xs text-sm">
+                                      Добавьте компоненты к товару (например, соусы, добавки).
+                                      <br />
+                                      Можно настроить, является ли компонент удаляемым при заказе.
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
+                              <ComponentsMultiSelect
+                                value={field.value || []}
+                                onChange={field.onChange}
+                                availableComponents={availableComponents}
+                                onCreateComponent={handleCreateComponent}
+                                loading={componentsLoading}
+                                onOpen={loadComponents}
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="option_groups"
+                          render={() => {
+                            const optionGroupOptions = availableOptionGroups.filter(
+                              (g) => !selectedOptionGroups.some((sg) => sg.id === g.id),
+                            );
+                            let selectContent;
+                            if (optionGroupsLoading) {
+                              selectContent = (
+                                <div className="px-4 py-2 text-muted-foreground">Загрузка...</div>
+                              );
+                            } else if (optionGroupOptions.length === 0) {
+                              selectContent = (
+                                <div className="px-4 py-2 text-muted-foreground">
+                                  Нет доступных групп опций
+                                </div>
+                              );
+                            } else {
+                              selectContent = optionGroupOptions.map((group) => (
+                                <SelectItem key={group.id} value={group.id.toString()}>
+                                  <div className="flex items-center gap-2">
+                                    <span className="align-middle">{group.name || 'Без названия'}</span>
+                                    {!group.is_active && (
+                                      <Badge variant="secondary" className="text-xs">
+                                        Неактивна
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </SelectItem>
+                              ));
+                            }
+                            return (
+                              <FormItem>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <FormLabel>Группы опций</FormLabel>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="inline-flex items-center cursor-pointer text-muted-foreground">
+                                          <Info className="w-4 h-4" />
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="right" className="max-w-xs text-sm">
+                                        Привяжите группы опций к товару для предложения дополнений
+                                        (соусы, добавки и т.д.).
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                  <div className="flex flex-wrap gap-2 mb-2">
+                                    {selectedOptionGroups.map((group) => (
+                                      <div
+                                        key={group.id}
+                                        className="inline-flex items-center gap-2 px-3 py-2 bg-primary/10 text-primary border border-primary/20 rounded-md text-sm font-medium"
+                                      >
+                                        <span className="truncate">{group.name || 'Без названия'}</span>
+                                        <button
+                                          type="button"
+                                          className="text-primary/70 hover:text-primary"
+                                          onClick={() => handleOptionGroupToggle(group)}
+                                        >
+                                          ×
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <Select
+                                    onOpenChange={(open) => {
+                                      if (open && !optionGroupsLoaded) {
+                                        loadOptionGroups();
+                                      }
+                                    }}
+                                    onValueChange={(val) => {
+                                      const group = availableOptionGroups.find((g) => g.id === parseInt(val));
+                                      if (group) handleOptionGroupToggle(group);
+                                    }}
+                                  >
+                                    <SelectTrigger className="w-full h-11">
+                                      <SelectValue
+                                        placeholder={
+                                          optionGroupsLoading ? 'Загрузка...' : 'Выберите группы опций'
+                                        }
+                                      />
+                                    </SelectTrigger>
+                                    <SelectContent>{selectContent}</SelectContent>
+                                  </Select>
                                 </div>
                                 <FormMessage />
                               </FormItem>

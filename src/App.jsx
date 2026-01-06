@@ -9,6 +9,7 @@ import { BotProvider } from './context/BotContext.jsx';
 import ProductList from './app/bot/products/page';
 import ProductFormPage from './app/bot/products/product/page';
 import UsersList from './app/bot/users/page';
+import DetailClient from './app/bot/users/user/page';
 import CategoriesList from './app/bot/categories/page';
 import CategoryFormPage from './app/bot/categories/category/page';
 import MailingsList from './app/bot/mailings/page';
@@ -21,6 +22,8 @@ import BillingPage from './app/billing/page';
 import SubscriptionPage from './app/bot/subscription/page';
 import TagsList from './app/bot/tags/page';
 import TagFormPage from './app/bot/tags/tag/page';
+import OptionsPage from './app/bot/options/page';
+import OptionGroupFormPage from './app/bot/options/option-group/page';
 import IntegrationsPage from './app/bot/integrations/page';
 
 const queryClient = new QueryClient({
@@ -76,6 +79,14 @@ function App() {
             element={
               <BotProvider>
                 <UsersList />
+              </BotProvider>
+            }
+          />
+          <Route
+            path="/:bot_id/users/:user_id"
+            element={
+              <BotProvider>
+                <DetailClient />
               </BotProvider>
             }
           />
@@ -189,6 +200,30 @@ function App() {
             element={
               <BotProvider>
                 <TagFormPage />
+              </BotProvider>
+            }
+          />
+          <Route
+            path="/:bot_id/options"
+            element={
+              <BotProvider>
+                <OptionsPage />
+              </BotProvider>
+            }
+          />
+          <Route
+            path="/:bot_id/options/create"
+            element={
+              <BotProvider>
+                <OptionGroupFormPage />
+              </BotProvider>
+            }
+          />
+          <Route
+            path="/:bot_id/options/:group_id"
+            element={
+              <BotProvider>
+                <OptionGroupFormPage />
               </BotProvider>
             }
           />

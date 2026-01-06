@@ -39,6 +39,7 @@ import {
   Tag,
   BriefcaseBusiness,
   Link,
+  Package2,
 } from 'lucide-react';
 import { UserProvider, useUser } from '@/context/UserContext';
 import { BotSwitcher } from '@/app/bot/bot-switcher';
@@ -69,6 +70,11 @@ const items = [
     name: 'Метки',
     url: (bot_id) => `/${bot_id}/tags`,
     icon: Tag,
+  },
+  {
+    name: 'Опции',
+    url: (bot_id) => `/${bot_id}/options`,
+    icon: Package2,
   },
   {
     name: 'Новости и рассылки',

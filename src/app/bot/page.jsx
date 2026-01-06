@@ -44,6 +44,7 @@ import { getGoals } from '@/lib/api';
 import { Rocket, CheckCircle2, Gift, Calendar, UserCircle2 } from 'lucide-react';
 import { useOrders } from '@/hooks/use-orders';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import OrdersTable from '@/app/bot/components/OrdersTable';
 
 // Константы для периодов фильтрации
 const PERIOD_OPTIONS = [
@@ -552,168 +553,17 @@ function BotPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
-              className="custom-card rounded-xl border p-6 mt-8 bg-card/50 hover:bg-card/70 transition-all"
+              className="mt-8"
             >
-              <div className="mb-6">
-                <h3 className="text-base font-semibold">
-                  Заказы {ordersTotal > 0 && `(${ordersTotal})`}
-                </h3>
-              </div>
-
-              {ordersError ? (
-                <div className="text-center py-8">
-                  <p className="text-sm text-muted-foreground">Не удалось загрузить заказы</p>
-                </div>
-              ) : (
-                ordersLoading && orders.length === 0 ? (
-                  // Скелетоны для первой загрузки
-                  <div className="overflow-hidden rounded-lg">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Номер</TableHead>
-                          <TableHead>Клиент</TableHead>
-                          <TableHead>Сумма</TableHead>
-                          <TableHead>Статус</TableHead>
-                          <TableHead>Создан</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {Array.from({ length: 5 }).map((_, index) => (
-                          <TableRow key={index}>
-                            <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                ) : orders.length > 0 ? (
-                  <InfiniteScroll
-                    dataLength={orders.length}
-                    next={loadMoreOrders}
-                    hasMore={ordersHasMore}
-                    scrollThreshold={0.8}
-                    loader={
-                      <div className="flex items-center justify-center gap-2 py-4">
-                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-sm text-muted-foreground">Загружаем еще...</span>
-                      </div>
-                    }
-                  >
-                    <div className="overflow-hidden rounded-lg">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Номер</TableHead>
-                            <TableHead>Клиент</TableHead>
-                            <TableHead>Менеджер</TableHead>
-                            <TableHead>Сумма</TableHead>
-                            <TableHead>Статус</TableHead>
-                            <TableHead>Создан</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          <AnimatePresence>
-                            {orders.map((order, index) => (
-                              <motion.tr
-                                key={order.id}
-                                custom={index}
-                                variants={tableRowVariants}
-                                initial="hidden"
-                                animate="visible"
-                                whileHover={{ backgroundColor: 'rgba(0, 0, 0, 0.02)' }}
-                                className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
-                              >
-                                <TableCell className="font-medium">#{order.number}</TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    {order.client?.photo_url ? (
-                                      <img 
-                                        src={order.client.photo_url} 
-                                        alt="" 
-                                        className="w-6 h-6 rounded-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-6 h-6 flex items-center justify-center rounded-full bg-primary/10">
-                                        <UserCircle2 className="w-4 h-4 text-primary" />
-                                      </div>
-                                    )}
-                                    <span>
-                                      {order.client?.first_name} {order.client?.last_name || ''}
-                                    </span>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <Link 
-                                    to={`/${bot_id}/managers/${order.manager?.id}`}
-                                    className="flex items-center gap-2 hover:text-primary transition-colors"
-                                  >
-                                    {order.manager?.photo_url ? (
-                                      <img 
-                                        src={order.manager.photo_url} 
-                                        alt="" 
-                                        className="w-6 h-6 rounded-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-6 h-6 flex items-center justify-center rounded-full bg-primary/10">
-                                        <UserCircle2 className="w-4 h-4 text-primary" />
-                                      </div>
-                                    )}
-                                    <span>
-                                      {order.manager?.first_name} {order.manager?.last_name || ''}
-                                    </span>
-                                  </Link>
-                                </TableCell>
-                                <TableCell className="font-medium text-primary">
-                                  {order.total} {bot?.currency}
-                                </TableCell>
-                                <TableCell>
-                                  <span 
-                                    className="px-2 py-1 rounded-md text-xs font-medium"
-                                    style={getOrderStatusStyle(order.status)}
-                                  >
-                                    {ORDER_STATUSES[order.status]}
-                                  </span>
-                                </TableCell>
-                                <TableCell className="text-muted-foreground">
-                                  {formatDate(order.created_at)}
-                                </TableCell>
-                              </motion.tr>
-                            ))}
-                          </AnimatePresence>
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </InfiniteScroll>
-                ) : (
-                  <div className="overflow-hidden rounded-lg">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Номер</TableHead>
-                          <TableHead>Клиент</TableHead>
-                          <TableHead>Менеджер</TableHead>
-                          <TableHead>Сумма</TableHead>
-                          <TableHead>Статус</TableHead>
-                          <TableHead>Создан</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                            Нет заказов за выбранный период
-                          </TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </div>
-                )
-              )}
+              <OrdersTable
+                botId={bot_id}
+                showPeriodFilter={true}
+                showClientColumn={true}
+                showManagerColumn={true}
+                initialPeriod={selectedPeriod}
+                title="Заказы"
+                currency={bot?.currency || 'руб'}
+              />
             </motion.div>
           </CardContent>
         </Card>

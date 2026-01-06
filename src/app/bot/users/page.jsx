@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useUsers } from '@/hooks/use-users';
 import { useBot } from '@/context/BotContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -211,7 +212,7 @@ export default function UsersList() {
                     >
                       <CardContent className="p-4">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <Link to={`/${bot?.id}/users/${user.id}`} className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
                             {user.photo_url ? (
                               <img 
                                 src={user.photo_url} 
@@ -255,7 +256,7 @@ export default function UsersList() {
                                 )}
                               </div>
                             </div>
-                          </div>
+                          </Link>
 
                           <div className="flex items-center gap-3 ml-auto">
                             {user.is_blocked ? (
