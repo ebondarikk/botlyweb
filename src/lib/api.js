@@ -558,6 +558,15 @@ export async function getUsers(
   });
 }
 
+export async function getUser(botId, userId) {
+  return apiRequest(`/bots/${botId}/users/${userId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
 export async function updateUser(botId, userId, ...params) {
   return apiRequest(`/bots/${botId}/users/${userId}`, {
     method: 'PUT',
@@ -768,7 +777,7 @@ export async function getOrders(
  * @returns {Promise<object>} - Объект ComponentListResponse
  */
 export async function getComponents(botId) {
-  return apiRequest(`/bots/${botId}/components`, {
+  return apiRequest(`/bots/${botId}/components/`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -784,7 +793,7 @@ export async function getComponents(botId) {
  * @returns {Promise<object>} - Созданный компонент
  */
 export async function createComponent(botId, componentData) {
-  return apiRequest(`/bots/${botId}/components`, {
+  return apiRequest(`/bots/${botId}/components/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -800,7 +809,7 @@ export async function createComponent(botId, componentData) {
  * @returns {Promise<object>} - Объект OptionGroupsResponse
  */
 export async function getOptionGroups(botId) {
-  return apiRequest(`/bots/${botId}/options`, {
+  return apiRequest(`/bots/${botId}/options/`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -832,7 +841,7 @@ export async function getOptionGroup(botId, groupId) {
  * @returns {Promise<object>} - Созданная группа опций
  */
 export async function createOptionGroup(botId, groupData) {
-  return apiRequest(`/bots/${botId}/options`, {
+  return apiRequest(`/bots/${botId}/options/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import {
   Plus,
   Package2,
+  Package,
 } from 'lucide-react';
 import BotLayout from '@/app/bot/layout';
 import { getOptionGroups } from '@/lib/api';
