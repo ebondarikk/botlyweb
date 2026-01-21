@@ -210,7 +210,7 @@ export default function SettingsPage() {
           />
 
           {/* Статусы заказов */}
-          <motion.div variants={itemVariants} whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
+          {/* <motion.div variants={itemVariants} whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
             <Card className="custom-card p-6 cursor-not-allowed bg-opacity-50 group transition-all duration-300 hover:bg-muted/30">
               <div className="flex items-center gap-4">
                 <div className="p-2.5 rounded-xl bg-primary/10">
@@ -230,7 +230,7 @@ export default function SettingsPage() {
                 </Badge>
               </div>
             </Card>
-          </motion.div>
+          </motion.div> */}
         </motion.div>
       </motion.div>
     </BotLayout>

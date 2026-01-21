@@ -898,3 +898,35 @@ export async function getOptionGroupsShort(botId) {
     },
   });
 }
+
+/**
+ * Получение настроек расписания работы бота
+ *
+ * @param {number} botId - Идентификатор бота
+ * @returns {Promise<object>} - Настройки расписания
+ */
+export async function getScheduleSettings(botId) {
+  return apiRequest(`/bots/${botId}/settings/schedule/`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+/**
+ * Обновление настроек расписания работы бота
+ *
+ * @param {number} botId - Идентификатор бота
+ * @param {object} schedule - Настройки расписания
+ * @returns {Promise<object>} - Обновленные настройки расписания
+ */
+export async function updateScheduleSettings(botId, schedule) {
+  return apiRequest(`/bots/${botId}/settings/schedule/`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(schedule),
+  });
+}

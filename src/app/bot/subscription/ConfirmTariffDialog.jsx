@@ -6,6 +6,7 @@ import { formatDate } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { TARIFF_THEMES } from '@/lib/constants/tariffs';
 import { toast } from 'react-hot-toast';
+import { Info } from 'lucide-react';
 
 export default function ConfirmTariffDialog({
   isOpen,
@@ -160,7 +161,7 @@ export default function ConfirmTariffDialog({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="flex flex-col sm:flex-row gap-4"
+        className="flex flex-col gap-4"
       >
         <Button
           className={`flex-1 h-12 transition-colors ${selectedTheme.colors.button}`}
@@ -178,6 +179,13 @@ export default function ConfirmTariffDialog({
             'Понизить тариф'
           )}
         </Button>
+        {isUpgrade && (
+          <div className="flex items-start gap-2">
+            <Info className="w-8 h-8 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Переходя к оплате, вы автоматически соглашаетесь с публичной офертой, размещенной на сайте <a className="underline" href="https://botly.by" target="_blank" rel="noopener noreferrer">botly.by</a>, а также даете свое согласи на периодический платеж</p>
+
+          </div>
+        )}
       </motion.div>
     </div>
   );
