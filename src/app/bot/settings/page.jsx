@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import WorkingHours from './components/WorkingHours';
 import {
   Accordion,
   AccordionContent,
@@ -204,6 +205,12 @@ export default function SettingsPage() {
           />
 
           <PaymentMethods
+            bot={bot}
+            openAccordion={openAccordion}
+            setOpenAccordion={setOpenAccordion}
+          />
+
+          <WorkingHours
             bot={bot}
             openAccordion={openAccordion}
             setOpenAccordion={setOpenAccordion}

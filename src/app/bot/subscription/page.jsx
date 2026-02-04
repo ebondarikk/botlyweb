@@ -282,7 +282,7 @@ export function SubscriptionPage() {
     if (!activeTo) return null;
     if (subscription?.tariff?.is_default) return null;
 
-    const dateText = activeTo.toLocaleDateString('ru-RU');
+    const dateText = activeTo ? activeTo.toLocaleDateString('ru-RU') : '-';
     const nextTariff = subscription?.next_tariff;
 
     if (nextTariff?.id === subscription?.tariff?.id) {
@@ -658,11 +658,12 @@ export function SubscriptionPage() {
                             <DialogDescription className="pt-2">
                               Вы действительно хотите отменить подписку? Текущий тариф будет активен
                               до{' '}
-                              {activeTo.toLocaleDateString('ru-RU', {
+                              { activeTo ? activeTo.toLocaleDateString('ru-RU', {
                                 year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                              })}
+                                    month: 'long',
+                                    day: 'numeric',
+                                  })
+                                : '-'}
                               , после чего будет применен Бесплатный тариф.
                             </DialogDescription>
                           </DialogHeader>

@@ -335,6 +335,7 @@ export default function CreateBot() {
                                   <SelectGroup>
                                     <SelectItem value="RUB">RUB - Российский рубль</SelectItem>
                                     <SelectItem value="BYN">BYN - Белорусский рубль</SelectItem>
+                                    <SelectItem value="USD">USD - Доллар США</SelectItem>
                                   </SelectGroup>
                                 </SelectContent>
                               </Select>

@@ -247,10 +247,10 @@ function BotLayoutContent({ children }) {
                       Аккаунт (скоро)
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <NavLink to={`/${bot?.id}/billing`}>
+                      {/* <NavLink to={`/${bot?.id}/billing`}>
                         <CreditCard />
                         Оплата
-                      </NavLink>
+                      </NavLink> */}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={onLogout}>
                       <LogOut />
